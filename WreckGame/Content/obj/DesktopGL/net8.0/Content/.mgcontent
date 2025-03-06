@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceFileCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Profile>Reach</Profile>
+  <Platform>DesktopGL</Platform>
+  <Config />
+  <SourceFiles>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/a.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/asphalt.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/b.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/border.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/c.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/d.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/drone_enemy.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/drone.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/e.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/explosion1.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/explosion2.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/explosion3.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/f.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/g.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/h.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/i.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/j.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/k.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/l.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/m.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/n.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/o.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/p.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/q.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/r.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/s.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/t.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/u.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/v.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/w.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/x.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/y.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/z.png</File>
+  </SourceFiles>
+  <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+  </DestFiles>
+</SourceFileCollection>
