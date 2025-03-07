@@ -56,3 +56,4 @@ C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\z.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\asphalt.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\border.xnb
+C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\obj\Debug\net8.0\WreckGame.sourcelink.json

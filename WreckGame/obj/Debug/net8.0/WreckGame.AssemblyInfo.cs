@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WreckGame")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1faad2fdccfc77ab4e1930ae8191b97bb4cb62b1")]
 [assembly: System.Reflection.AssemblyProductAttribute("WreckGame")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WreckGame")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
