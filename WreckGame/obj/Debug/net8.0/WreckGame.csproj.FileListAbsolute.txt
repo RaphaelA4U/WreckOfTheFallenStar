@@ -1,5 +1,7 @@
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\entities\drone.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\entities\drone_enemy.xnb
+C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\entities\drone_enemy1.xnb
+C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\entities\drone_enemy2.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\font\a.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\font\b.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\font\c.xnb
@@ -26,6 +28,7 @@ C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\font\x.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\font\y.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\font\z.xnb
+C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\items\data_shard.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\particles\explosion1.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\particles\explosion2.xnb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\particles\explosion3.xnb
@@ -57,5 +60,3 @@ C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\obj\Debug\net8.
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\obj\Debug\net8.0\WreckGame.pdb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\obj\Debug\net8.0\WreckGame.genruntimeconfig.cache
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\obj\Debug\net8.0\ref\WreckGame.dll
-C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\entities\drone_enemy1.xnb
-C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\entities\drone_enemy2.xnb
