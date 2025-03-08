@@ -4,12 +4,24 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/ColorReplace.fx</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/entities/drone_enemy.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/entities/drone_enemy1.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/entities/drone_enemy2.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/entities/drone.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/0.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/1.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/2.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/3.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/4.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/5.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/6.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/7.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/8.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/9.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/a.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/b.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/background.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/c.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/d.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/e.png</File>
@@ -34,7 +46,9 @@
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/x.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/y.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/z.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/items/charge.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/items/data_shard.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/items/parts.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/particles/explosion1.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/particles/explosion2.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/particles/explosion3.png</File>
@@ -42,6 +56,20 @@
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/tiles/border.png</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

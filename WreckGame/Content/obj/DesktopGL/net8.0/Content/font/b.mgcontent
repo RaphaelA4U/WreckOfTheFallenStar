@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <SourceFile>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/font/b.png</SourceFile>
-  <SourceTime>2025-03-06T21:33:46.8540271+01:00</SourceTime>
+  <SourceTime>2025-03-08T13:13:08.4500992+01:00</SourceTime>
   <DestFile>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/bin/DesktopGL/Content/font/b.xnb</DestFile>
-  <DestTime>2025-03-08T08:53:57.965859+01:00</DestTime>
+  <DestTime>2025-03-08T17:11:47.6355415+01:00</DestTime>
   <Importer>TextureImporter</Importer>
   <ImporterTime>2024-08-16T19:05:56+02:00</ImporterTime>
   <Processor>TextureProcessor</Processor>
