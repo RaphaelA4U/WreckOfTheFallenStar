@@ -4,7 +4,6 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/ColorReplace.fx</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/entities/drone_enemy.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/entities/drone_enemy1.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/entities/drone_enemy2.png</File>
@@ -57,7 +56,6 @@
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/tiles/border.png</File>
   </SourceFiles>
   <DestFiles>
-    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

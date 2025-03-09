@@ -9,13 +9,13 @@ namespace WreckGame
 {
     public class Game1 : Game
     {
+        private int _previousScrollWheelValue;
         private bool _isDragging = false;
         private int _draggedEnemyIndex = -1;
         private int _draggedDataShardIndex = -1;
         private int _draggedRepairPartIndex = -1;
         private int _draggedChargeItemIndex = -1;
         private Vector2 _dragOffset = Vector2.Zero;
-        private Effect _colorReplaceEffect;
 
         #region Constants
         private const int MAP_WIDTH_TILES = 32;
@@ -129,7 +129,6 @@ namespace WreckGame
 
         #region Explosion
         private Texture2D[] _explosionTextures;
-        
         private int _currentExplosionFrame = 0;
         private float _frameTimer = 0f;
         private bool _explosionActive = false;
@@ -178,18 +177,12 @@ namespace WreckGame
             _graphics.ApplyChanges();
             
             _enemies = new EnemyData[3];
-
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _colorReplaceEffect = Content.Load<Effect>("ColorReplace");
-
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(Color.White.ToVector4());
-            _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(Color.White.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
 
             LoadMapTextures();
             LoadCharacterTextures();
@@ -208,7 +201,6 @@ namespace WreckGame
         private void InitializeButtons()
         {
             _startScreenButtons = new Button[2];
-            
             _startScreenButtons[0] = new Button
             {
                 Text = "START",
@@ -216,7 +208,6 @@ namespace WreckGame
                 Scale = 2.0f,
                 Bounds = CalculateButtonBounds("START", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50)
             };
-
             _startScreenButtons[1] = new Button
             {
                 Text = "EXIT",
@@ -226,7 +217,6 @@ namespace WreckGame
             };
             
             _pauseScreenButtons = new Button[3];
-            
             _pauseScreenButtons[0] = new Button
             {
                 Text = "RESUME",
@@ -234,7 +224,6 @@ namespace WreckGame
                 Scale = 2.0f,
                 Bounds = CalculateButtonBounds("RESUME", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50)
             };
-
             _pauseScreenButtons[1] = new Button
             {
                 Text = "RESTART",
@@ -242,7 +231,6 @@ namespace WreckGame
                 Scale = 2.0f,
                 Bounds = CalculateButtonBounds("RESTART", 2.0f, GraphicsDevice.Viewport.Height / 2 + 130)
             };
-
             _pauseScreenButtons[2] = new Button
             {
                 Text = "EXIT",
@@ -252,7 +240,6 @@ namespace WreckGame
             };
 
             _deathScreenButtons = new Button[2];
-
             _deathScreenButtons[0] = new Button
             {
                 Text = "RESTART",
@@ -260,7 +247,6 @@ namespace WreckGame
                 Scale = 2.0f,
                 Bounds = CalculateButtonBounds("RESTART", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50)
             };
-
             _deathScreenButtons[1] = new Button
             {
                 Text = "EXIT",
@@ -273,12 +259,9 @@ namespace WreckGame
         private Rectangle CalculateButtonBounds(string text, float scale, int y)
         {
             Vector2 textSize = MeasureText(text, scale);
-            
             int width = (int)textSize.X;
             int height = 60;
-            
             int x = GraphicsDevice.Viewport.Width / 2 - width / 2;
-            
             return new Rectangle(x, y, width, height);
         }
 
@@ -296,12 +279,10 @@ namespace WreckGame
             {
                 _dataShards[i].Texture = dataShardTexture;
             }
-            
             for (int i = 0; i < _repairParts.Length; i++)
             {
                 _repairParts[i].Texture = repairPartTexture;
             }
-            
             for (int i = 0; i < _chargeItems.Length; i++)
             {
                 _chargeItems[i].Texture = chargeItemTexture;
@@ -335,7 +316,6 @@ namespace WreckGame
         {
             _pixelTexture = new Texture2D(GraphicsDevice, 1, 1);
             _pixelTexture.SetData([Color.White]);
-
             _debugTexture = new Texture2D(GraphicsDevice, 1, 1);
             _debugTexture.SetData([Color.White]);
         }
@@ -344,50 +324,39 @@ namespace WreckGame
         {
             _fontTextures = [];
             string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-            
             foreach (char c in chars)
             {
                 _fontTextures[c] = Content.Load<Texture2D>($"font/{c}");
-                
                 if (char.IsLetter(c))
                 {
                     _fontTextures[char.ToUpper(c)] = Content.Load<Texture2D>($"font/{c}");
                 }
             }
-            
             _fontBackgroundTexture = Content.Load<Texture2D>("font/background");
         }
 
         private void ResetGame()
         {
-            _droneWorldPosition = new Vector2(
-                MAP_WIDTH_TILES * TILE_SIZE / 2, 
-                MAP_HEIGHT_TILES * TILE_SIZE / 2);
+            _droneWorldPosition = new Vector2(MAP_WIDTH_TILES * TILE_SIZE / 2, MAP_HEIGHT_TILES * TILE_SIZE / 2);
             _dronePosition = _droneWorldPosition * _gameScale;
             _droneVelocity = Vector2.Zero;
             _playerHP = 100;
             _playerCharge = 100;
             _chargeTimer = 0f;
             
-            _enemies[0].WorldPosition = new Vector2(
-                _droneWorldPosition.X,
-                _droneWorldPosition.Y - 160);
+            _enemies[0].WorldPosition = new Vector2(_droneWorldPosition.X, _droneWorldPosition.Y - 160);
             _enemies[0].Position = _enemies[0].WorldPosition * _gameScale;
             _enemies[0].Direction = 1;
             _enemies[0].Active = true;
             _enemies[0].Speed = 80f;
             
-            _enemies[1].WorldPosition = new Vector2(
-                _droneWorldPosition.X + 160,
-                _droneWorldPosition.Y);
+            _enemies[1].WorldPosition = new Vector2(_droneWorldPosition.X + 160, _droneWorldPosition.Y);
             _enemies[1].Position = _enemies[1].WorldPosition * _gameScale;
             _enemies[1].Direction = 1;
             _enemies[1].Active = true;
             _enemies[1].Speed = 60f;
             
-            _enemies[2].WorldPosition = new Vector2(
-                _droneWorldPosition.X - 160,
-                _droneWorldPosition.Y);
+            _enemies[2].WorldPosition = new Vector2(_droneWorldPosition.X - 160, _droneWorldPosition.Y);
             _enemies[2].Position = _enemies[2].WorldPosition * _gameScale;
             _enemies[2].Direction = 1;
             _enemies[2].Active = true;
@@ -401,7 +370,6 @@ namespace WreckGame
         private void InitializeDataShards()
         {
             int shardCount = _random.Next(MIN_SHARDS, MAX_SHARDS + 1);
-
             float minX = TILE_SIZE;
             float minY = TILE_SIZE;
             float maxX = MAP_WIDTH_TILES * TILE_SIZE;
@@ -412,23 +380,11 @@ namespace WreckGame
                 if (i < shardCount)
                 {
                     _dataShards[i].Active = true;
-
-                    _dataShards[i].WorldPosition = new Vector2(
-                        _random.Next((int)minX, (int)maxX),
-                        _random.Next((int)minY, (int)maxY)
-                    );
-
+                    _dataShards[i].WorldPosition = new Vector2(_random.Next((int)minX, (int)maxX), _random.Next((int)minY, (int)maxY));
                     _dataShards[i].Position = _dataShards[i].WorldPosition * _gameScale;
-
                     int width = _dataShards[i].Texture != null ? (int)(_dataShards[i].Texture.Width * 0.7f) : 22;
                     int height = _dataShards[i].Texture != null ? (int)(_dataShards[i].Texture.Height * 0.7f) : 22;
-
-                    _dataShards[i].Hitbox = new Rectangle(
-                        (int)_dataShards[i].WorldPosition.X,
-                        (int)(_dataShards[i].WorldPosition.Y + _dataShards[i].HoverOffset),
-                        width,
-                        height
-                    );
+                    _dataShards[i].Hitbox = new Rectangle((int)_dataShards[i].WorldPosition.X, (int)(_dataShards[i].WorldPosition.Y + _dataShards[i].HoverOffset), width, height);
                 }
                 else
                 {
@@ -440,7 +396,6 @@ namespace WreckGame
         private void InitializeRepairParts()
         {
             int partCount = _random.Next(MIN_PARTS, MAX_PARTS + 1);
-
             float minX = TILE_SIZE;
             float minY = TILE_SIZE;
             float maxX = MAP_WIDTH_TILES * TILE_SIZE;
@@ -451,23 +406,11 @@ namespace WreckGame
                 if (i < partCount)
                 {
                     _repairParts[i].Active = true;
-
-                    _repairParts[i].WorldPosition = new Vector2(
-                        _random.Next((int)minX, (int)maxX),
-                        _random.Next((int)minY, (int)maxY)
-                    );
-
+                    _repairParts[i].WorldPosition = new Vector2(_random.Next((int)minX, (int)maxX), _random.Next((int)minY, (int)maxY));
                     _repairParts[i].Position = _repairParts[i].WorldPosition * _gameScale;
-
                     int width = _repairParts[i].Texture != null ? (int)(_repairParts[i].Texture.Width * 0.7f) : 22;
                     int height = _repairParts[i].Texture != null ? (int)(_repairParts[i].Texture.Height * 0.7f) : 22;
-
-                    _repairParts[i].Hitbox = new Rectangle(
-                        (int)_repairParts[i].WorldPosition.X,
-                        (int)(_repairParts[i].WorldPosition.Y + _repairParts[i].HoverOffset),
-                        width,
-                        height
-                    );
+                    _repairParts[i].Hitbox = new Rectangle((int)_repairParts[i].WorldPosition.X, (int)(_repairParts[i].WorldPosition.Y + _repairParts[i].HoverOffset), width, height);
                 }
                 else
                 {
@@ -479,7 +422,6 @@ namespace WreckGame
         private void InitializeChargeItems()
         {
             int chargeCount = _random.Next(MIN_CHARGES, MAX_CHARGES + 1);
-
             float minX = TILE_SIZE;
             float minY = TILE_SIZE;
             float maxX = MAP_WIDTH_TILES * TILE_SIZE;
@@ -490,23 +432,11 @@ namespace WreckGame
                 if (i < chargeCount)
                 {
                     _chargeItems[i].Active = true;
-
-                    _chargeItems[i].WorldPosition = new Vector2(
-                        _random.Next((int)minX, (int)maxX),
-                        _random.Next((int)minY, (int)maxY)
-                    );
-
+                    _chargeItems[i].WorldPosition = new Vector2(_random.Next((int)minX, (int)maxX), _random.Next((int)minY, (int)maxY));
                     _chargeItems[i].Position = _chargeItems[i].WorldPosition * _gameScale;
-
                     int width = _chargeItems[i].Texture != null ? (int)(_chargeItems[i].Texture.Width * 0.7f) : 22;
                     int height = _chargeItems[i].Texture != null ? (int)(_chargeItems[i].Texture.Height * 0.7f) : 22;
-
-                    _chargeItems[i].Hitbox = new Rectangle(
-                        (int)_chargeItems[i].WorldPosition.X,
-                        (int)(_chargeItems[i].WorldPosition.Y + _chargeItems[i].HoverOffset),
-                        width,
-                        height
-                    );
+                    _chargeItems[i].Hitbox = new Rectangle((int)_chargeItems[i].WorldPosition.X, (int)(_chargeItems[i].WorldPosition.Y + _chargeItems[i].HoverOffset), width, height);
                 }
                 else
                 {
@@ -522,14 +452,12 @@ namespace WreckGame
                 _startScreenButtons[0].Bounds = CalculateButtonBounds("START", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50);
                 _startScreenButtons[1].Bounds = CalculateButtonBounds("EXIT", 2.0f, GraphicsDevice.Viewport.Height / 2 + 130);
             }
-            
             if (_pauseScreenButtons != null)
             {
                 _pauseScreenButtons[0].Bounds = CalculateButtonBounds("RESUME", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50);
                 _pauseScreenButtons[1].Bounds = CalculateButtonBounds("RESTART", 2.0f, GraphicsDevice.Viewport.Height / 2 + 130);
                 _pauseScreenButtons[2].Bounds = CalculateButtonBounds("EXIT", 2.0f, GraphicsDevice.Viewport.Height / 2 + 210);
             }
-
             if (_deathScreenButtons != null)
             {
                 _deathScreenButtons[0].Bounds = CalculateButtonBounds("RESTART", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50);
@@ -546,7 +474,6 @@ namespace WreckGame
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             HandleDebugInput(keyboard);
-            
             HandleGameStateInput(keyboard);
             
             if (_isGameStarted && !_isPlayerDead && !_isGamePaused)
@@ -561,14 +488,13 @@ namespace WreckGame
                     _damageFlashTimer -= delta;
                 }
                 
-                if (!_editMode) 
+                if (!_editMode)
                 {
                     _chargeTimer += delta;
                     if (_chargeTimer >= 1.0f)
                     {
                         _playerCharge--;
                         _chargeTimer -= 1.0f;
-                        
                         if (_playerCharge <= 0)
                         {
                             _isPlayerDead = true;
@@ -586,12 +512,10 @@ namespace WreckGame
             UpdateHoverEffects(gameTime);
             
             _previousKeyboardState = keyboard;
-            
             if (_editMode)
             {
                 HandleEditModeInput();
             }
-
             _previousMouseState = mouse;
 
             base.Update(gameTime);
@@ -599,9 +523,7 @@ namespace WreckGame
 
         private void HandleGameStateInput(KeyboardState keyboard)
         {
-            if (!IsActive)
-                return;
-            
+            if (!IsActive) return;
             MouseState mouse = Mouse.GetState();
             Point mousePoint = new Point(mouse.X, mouse.Y);
             
@@ -615,14 +537,12 @@ namespace WreckGame
                         ResetGame();
                         return;
                     }
-                    
                     if (_startScreenButtons[1].Contains(mousePoint))
                     {
                         Exit();
                         return;
                     }
                 }
-                
                 return;
             }
             
@@ -636,14 +556,12 @@ namespace WreckGame
                         _isPlayerDead = false;
                         return;
                     }
-                    
                     if (_deathScreenButtons[1].Contains(mousePoint))
                     {
                         Exit();
                         return;
                     }
                 }
-                
                 return;
             }
             
@@ -662,14 +580,12 @@ namespace WreckGame
                         _isGamePaused = false;
                         return;
                     }
-                    
                     if (_pauseScreenButtons[1].Contains(mousePoint))
                     {
                         ResetGame();
                         _isGamePaused = false;
                         return;
                     }
-                    
                     if (_pauseScreenButtons[2].Contains(mousePoint))
                     {
                         Exit();
@@ -681,33 +597,31 @@ namespace WreckGame
 
         private void HandleDebugInput(KeyboardState keyboard)
         {
-            if (keyboard.IsKeyDown(Keys.Add) && _previousKeyboardState.IsKeyUp(Keys.Add))
+            MouseState mouse = Mouse.GetState();
+            int currentScrollValue = mouse.ScrollWheelValue;
+            
+            if (currentScrollValue != _previousScrollWheelValue)
             {
-                _gameScale += 0.5f;
+                int scrollChange = currentScrollValue - _previousScrollWheelValue;
+                
+                float zoomChange = scrollChange * 0.001f;
+                _gameScale += zoomChange;
+                
+                _gameScale = Math.Max(0.5f, _gameScale);
+                
+                _gameScale = Math.Min(_gameScale, 5.0f);
+                
+                _previousScrollWheelValue = currentScrollValue;
             }
 
-            if (keyboard.IsKeyDown(Keys.Subtract) && _previousKeyboardState.IsKeyUp(Keys.Subtract))
-            {
-                _gameScale = Math.Max(0.5f, _gameScale - 0.5f);
-            }
-
-            if (keyboard.IsKeyDown(Keys.LeftControl) && 
-                keyboard.IsKeyDown(Keys.LeftShift) &&
-                keyboard.IsKeyDown(Keys.C) && 
-                !(_previousKeyboardState.IsKeyDown(Keys.LeftControl) && 
-                _previousKeyboardState.IsKeyDown(Keys.LeftShift) &&
-                _previousKeyboardState.IsKeyDown(Keys.C)))
+            if (keyboard.IsKeyDown(Keys.LeftControl) && keyboard.IsKeyDown(Keys.LeftShift) && keyboard.IsKeyDown(Keys.C) &&
+                !(_previousKeyboardState.IsKeyDown(Keys.LeftControl) && _previousKeyboardState.IsKeyDown(Keys.LeftShift) && _previousKeyboardState.IsKeyDown(Keys.C)))
             {
                 _editMode = !_editMode;
                 _showHitboxes = !_showHitboxes;
             }
-            
-            if (keyboard.IsKeyDown(Keys.LeftControl) && 
-                keyboard.IsKeyDown(Keys.LeftShift) &&
-                keyboard.IsKeyDown(Keys.K) && 
-                !(_previousKeyboardState.IsKeyDown(Keys.LeftControl) && 
-                _previousKeyboardState.IsKeyDown(Keys.LeftShift) &&
-                _previousKeyboardState.IsKeyDown(Keys.K)))
+            if (keyboard.IsKeyDown(Keys.LeftControl) && keyboard.IsKeyDown(Keys.LeftShift) && keyboard.IsKeyDown(Keys.K) &&
+                !(_previousKeyboardState.IsKeyDown(Keys.LeftControl) && _previousKeyboardState.IsKeyDown(Keys.LeftShift) && _previousKeyboardState.IsKeyDown(Keys.K)))
             {
                 _playerHP = 0;
                 _isPlayerDead = true;
@@ -721,7 +635,6 @@ namespace WreckGame
         private void HandleEditModeInput()
         {
             MouseState mouse = Mouse.GetState();
-            
             Vector2 screenPosition = new Vector2(mouse.X, mouse.Y);
             Vector2 worldPosition = Vector2.Transform(screenPosition, Matrix.Invert(_viewMatrix));
             
@@ -740,7 +653,6 @@ namespace WreckGame
                         return;
                     }
                 }
-                
                 for (int i = 0; i < _dataShards.Length; i++)
                 {
                     if (_dataShards[i].Active && _dataShards[i].Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
@@ -749,7 +661,6 @@ namespace WreckGame
                         return;
                     }
                 }
-                
                 for (int i = 0; i < _repairParts.Length; i++)
                 {
                     if (_repairParts[i].Active && _repairParts[i].Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
@@ -758,7 +669,6 @@ namespace WreckGame
                         return;
                     }
                 }
-                
                 for (int i = 0; i < _chargeItems.Length; i++)
                 {
                     if (_chargeItems[i].Active && _chargeItems[i].Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
@@ -786,7 +696,6 @@ namespace WreckGame
                             return;
                         }
                     }
-                    
                     for (int i = 0; i < _dataShards.Length; i++)
                     {
                         if (_dataShards[i].Active && _dataShards[i].Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
@@ -800,7 +709,6 @@ namespace WreckGame
                             return;
                         }
                     }
-                    
                     for (int i = 0; i < _repairParts.Length; i++)
                     {
                         if (_repairParts[i].Active && _repairParts[i].Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
@@ -814,7 +722,6 @@ namespace WreckGame
                             return;
                         }
                     }
-                    
                     for (int i = 0; i < _chargeItems.Length; i++)
                     {
                         if (_chargeItems[i].Active && _chargeItems[i].Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
@@ -832,7 +739,6 @@ namespace WreckGame
                 else if (_isDragging)
                 {
                     Vector2 newPosition = worldPosition + _dragOffset;
-                    
                     newPosition.X = MathHelper.Clamp(newPosition.X, minX, maxX);
                     newPosition.Y = MathHelper.Clamp(newPosition.Y, minY, maxY);
                     
@@ -840,7 +746,6 @@ namespace WreckGame
                     {
                         _enemies[_draggedEnemyIndex].WorldPosition = newPosition;
                         _enemies[_draggedEnemyIndex].Position = _enemies[_draggedEnemyIndex].WorldPosition * _gameScale;
-                        
                         _enemies[_draggedEnemyIndex].Hitbox = new Rectangle(
                             (int)_enemies[_draggedEnemyIndex].WorldPosition.X,
                             (int)(_enemies[_draggedEnemyIndex].WorldPosition.Y + _enemies[_draggedEnemyIndex].HoverOffset),
@@ -852,7 +757,6 @@ namespace WreckGame
                     {
                         _dataShards[_draggedDataShardIndex].WorldPosition = newPosition;
                         _dataShards[_draggedDataShardIndex].Position = _dataShards[_draggedDataShardIndex].WorldPosition * _gameScale;
-                        
                         _dataShards[_draggedDataShardIndex].Hitbox = new Rectangle(
                             (int)_dataShards[_draggedDataShardIndex].WorldPosition.X,
                             (int)(_dataShards[_draggedDataShardIndex].WorldPosition.Y + _dataShards[_draggedDataShardIndex].HoverOffset),
@@ -864,7 +768,6 @@ namespace WreckGame
                     {
                         _repairParts[_draggedRepairPartIndex].WorldPosition = newPosition;
                         _repairParts[_draggedRepairPartIndex].Position = _repairParts[_draggedRepairPartIndex].WorldPosition * _gameScale;
-                        
                         _repairParts[_draggedRepairPartIndex].Hitbox = new Rectangle(
                             (int)_repairParts[_draggedRepairPartIndex].WorldPosition.X,
                             (int)(_repairParts[_draggedRepairPartIndex].WorldPosition.Y + _repairParts[_draggedRepairPartIndex].HoverOffset),
@@ -876,7 +779,6 @@ namespace WreckGame
                     {
                         _chargeItems[_draggedChargeItemIndex].WorldPosition = newPosition;
                         _chargeItems[_draggedChargeItemIndex].Position = _chargeItems[_draggedChargeItemIndex].WorldPosition * _gameScale;
-                        
                         _chargeItems[_draggedChargeItemIndex].Hitbox = new Rectangle(
                             (int)_chargeItems[_draggedChargeItemIndex].WorldPosition.X,
                             (int)(_chargeItems[_draggedChargeItemIndex].WorldPosition.Y + _chargeItems[_draggedChargeItemIndex].HoverOffset),
@@ -913,12 +815,10 @@ namespace WreckGame
                 direction.Normalize();
                 _droneVelocity += direction * acceleration * delta;
             }
-
             if (direction == Vector2.Zero || _droneVelocity.Length() > maxSpeed)
             {
                 _droneVelocity -= _droneVelocity * friction * delta;
             }
-
             if (_droneVelocity.Length() > maxSpeed)
             {
                 _droneVelocity.Normalize();
@@ -926,7 +826,6 @@ namespace WreckGame
             }
 
             _droneWorldPosition += _droneVelocity * delta;
-
             float minX = TILE_SIZE;
             float minY = TILE_SIZE;
             float maxX = MAP_WIDTH_TILES * TILE_SIZE;
@@ -943,18 +842,12 @@ namespace WreckGame
                     -_cameraPosition.Y * _gameScale + GraphicsDevice.Viewport.Height / 2,
                     0);
 
-            _playerHitbox = new Rectangle(
-                (int)_droneWorldPosition.X,
-                (int)(_droneWorldPosition.Y + _hoverOffset),
-                _droneTexture.Width,
-                _droneTexture.Height
-            );
+            _playerHitbox = new Rectangle((int)_droneWorldPosition.X, (int)(_droneWorldPosition.Y + _hoverOffset), _droneTexture.Width, _droneTexture.Height);
         }
 
         private void UpdateEnemyMovement(float delta)
         {
-            if (_editMode)
-                return;
+            if (_editMode) return;
 
             float minX = TILE_SIZE;
             float minY = TILE_SIZE;
@@ -964,7 +857,6 @@ namespace WreckGame
             if (_enemies[0].Active)
             {
                 _enemies[0].WorldPosition.X += _enemies[0].Speed * _enemies[0].Direction * delta;
-
                 if (_enemies[0].WorldPosition.X <= minX)
                 {
                     _enemies[0].WorldPosition.X = minX;
@@ -975,21 +867,12 @@ namespace WreckGame
                     _enemies[0].WorldPosition.X = maxX;
                     _enemies[0].Direction = -1;
                 }
-
                 _enemies[0].Position = _enemies[0].WorldPosition * _gameScale;
-
-                _enemies[0].Hitbox = new Rectangle(
-                    (int)_enemies[0].WorldPosition.X,
-                    (int)(_enemies[0].WorldPosition.Y + _enemies[0].HoverOffset),
-                    _enemies[0].Texture.Width,
-                    _enemies[0].Texture.Height
-                );
+                _enemies[0].Hitbox = new Rectangle((int)_enemies[0].WorldPosition.X, (int)(_enemies[0].WorldPosition.Y + _enemies[0].HoverOffset), _enemies[0].Texture.Width, _enemies[0].Texture.Height);
             }
-
             if (_enemies[1].Active)
             {
                 _enemies[1].WorldPosition.Y += _enemies[1].Speed * _enemies[1].Direction * delta;
-
                 if (_enemies[1].WorldPosition.Y <= minY)
                 {
                     _enemies[1].WorldPosition.Y = minY;
@@ -1000,38 +883,21 @@ namespace WreckGame
                     _enemies[1].WorldPosition.Y = maxY;
                     _enemies[1].Direction = -1;
                 }
-
                 _enemies[1].Position = _enemies[1].WorldPosition * _gameScale;
-
-                _enemies[1].Hitbox = new Rectangle(
-                    (int)_enemies[1].WorldPosition.X,
-                    (int)(_enemies[1].WorldPosition.Y + _enemies[1].HoverOffset),
-                    _enemies[1].Texture.Width,
-                    _enemies[1].Texture.Height
-                );
+                _enemies[1].Hitbox = new Rectangle((int)_enemies[1].WorldPosition.X, (int)(_enemies[1].WorldPosition.Y + _enemies[1].HoverOffset), _enemies[1].Texture.Width, _enemies[1].Texture.Height);
             }
-
             if (_enemies[2].Active)
             {
                 Vector2 toPlayer = _droneWorldPosition - _enemies[2].WorldPosition;
-
                 if (toPlayer.Length() > 16)
                 {
                     toPlayer.Normalize();
                     _enemies[2].WorldPosition += toPlayer * _enemies[2].Speed * delta;
-
                     _enemies[2].WorldPosition.X = MathHelper.Clamp(_enemies[2].WorldPosition.X, minX, maxX);
                     _enemies[2].WorldPosition.Y = MathHelper.Clamp(_enemies[2].WorldPosition.Y, minY, maxY);
                 }
-
                 _enemies[2].Position = _enemies[2].WorldPosition * _gameScale;
-
-                _enemies[2].Hitbox = new Rectangle(
-                    (int)_enemies[2].WorldPosition.X,
-                    (int)(_enemies[2].WorldPosition.Y + _enemies[2].HoverOffset),
-                    _enemies[2].Texture.Width,
-                    _enemies[2].Texture.Height
-                );
+                _enemies[2].Hitbox = new Rectangle((int)_enemies[2].WorldPosition.X, (int)(_enemies[2].WorldPosition.Y + _enemies[2].HoverOffset), _enemies[2].Texture.Width, _enemies[2].Texture.Height);
             }
         }
 
@@ -1042,25 +908,17 @@ namespace WreckGame
                 if (_enemies[i].Active && _playerHitbox.Intersects(_enemies[i].Hitbox))
                 {
                     _playerHP -= 25;
-                    
                     _damageFlashTimer = DAMAGE_FLASH_DURATION;
-                    
                     Vector2 collisionPosition = (_droneWorldPosition + _enemies[i].WorldPosition) / 2;
                     _explosionPosition = collisionPosition * _gameScale;
                     _explosionActive = true;
                     _currentExplosionFrame = 0;
                     _frameTimer = 0f;
-                    
-                    if (_playerHP <= 0)
-                    {
-                        _isPlayerDead = true;
-                    }
-                    
+                    if (_playerHP <= 0) _isPlayerDead = true;
                     _enemies[i].Active = false;
                     break;
                 }
             }
-            
             for (int i = 0; i < _dataShards.Length; i++)
             {
                 if (_dataShards[i].Active && _playerHitbox.Intersects(_dataShards[i].Hitbox))
@@ -1068,23 +926,19 @@ namespace WreckGame
                     _dataShards[i].Active = false;
                 }
             }
-            
             for (int i = 0; i < _repairParts.Length; i++)
             {
                 if (_repairParts[i].Active && _playerHitbox.Intersects(_repairParts[i].Hitbox))
                 {
                     _repairParts[i].Active = false;
-                    
                     _playerHP = Math.Min(_playerHP + 25, 100);
                 }
             }
-            
             for (int i = 0; i < _chargeItems.Length; i++)
             {
                 if (_chargeItems[i].Active && _playerHitbox.Intersects(_chargeItems[i].Hitbox))
                 {
                     _chargeItems[i].Active = false;
-                    
                     _playerCharge = Math.Min(_playerCharge + 25, 100);
                 }
             }
@@ -1095,11 +949,9 @@ namespace WreckGame
             for (int i = 0; i < _enemies.Length; i++)
             {
                 if (!_enemies[i].Active) continue;
-                
                 for (int j = i + 1; j < _enemies.Length; j++)
                 {
                     if (!_enemies[j].Active) continue;
-                    
                     if (_enemies[i].Hitbox.Intersects(_enemies[j].Hitbox))
                     {
                         Vector2 collisionPosition = (_enemies[i].WorldPosition + _enemies[j].WorldPosition) / 2;
@@ -1107,7 +959,6 @@ namespace WreckGame
                         _enemyExplosionActive = true;
                         _enemyExplosionFrame = 0;
                         _enemyExplosionTimer = 0f;
-                        
                         _enemies[i].Active = false;
                         _enemies[j].Active = false;
                     }
@@ -1124,14 +975,9 @@ namespace WreckGame
                 {
                     _frameTimer = 0f;
                     _currentExplosionFrame++;
-                    
-                    if (_currentExplosionFrame >= EXPLOSION_FRAME_COUNT)
-                    {
-                        _explosionActive = false;
-                    }
+                    if (_currentExplosionFrame >= EXPLOSION_FRAME_COUNT) _explosionActive = false;
                 }
             }
-            
             if (_enemyExplosionActive)
             {
                 _enemyExplosionTimer += delta;
@@ -1139,11 +985,7 @@ namespace WreckGame
                 {
                     _enemyExplosionTimer = 0f;
                     _enemyExplosionFrame++;
-                    
-                    if (_enemyExplosionFrame >= EXPLOSION_FRAME_COUNT)
-                    {
-                        _enemyExplosionActive = false;
-                    }
+                    if (_enemyExplosionFrame >= EXPLOSION_FRAME_COUNT) _enemyExplosionActive = false;
                 }
             }
         }
@@ -1152,20 +994,17 @@ namespace WreckGame
         {
             double time = gameTime.TotalGameTime.TotalSeconds;
             _hoverOffset = (float)Math.Sin(time * 5f) * 15f;
-            
             _enemies[0].HoverOffset = (float)Math.Sin(time * 2.5f) * 10f;
             _enemies[1].HoverOffset = (float)Math.Sin(time * 3.5f) * 12f;
             _enemies[2].HoverOffset = (float)Math.Sin(time * 4.5f) * 8f;
             
-            if (_editMode) {
-                for (int i = 0; i < _enemies.Length; i++) {
-                    if (_enemies[i].Active) {
-                        _enemies[i].Hitbox = new Rectangle(
-                            (int)_enemies[i].WorldPosition.X,
-                            (int)(_enemies[i].WorldPosition.Y + _enemies[i].HoverOffset),
-                            _enemies[i].Texture.Width,
-                            _enemies[i].Texture.Height
-                        );
+            if (_editMode)
+            {
+                for (int i = 0; i < _enemies.Length; i++)
+                {
+                    if (_enemies[i].Active)
+                    {
+                        _enemies[i].Hitbox = new Rectangle((int)_enemies[i].WorldPosition.X, (int)(_enemies[i].WorldPosition.Y + _enemies[i].HoverOffset), _enemies[i].Texture.Width, _enemies[i].Texture.Height);
                     }
                 }
             }
@@ -1175,43 +1014,23 @@ namespace WreckGame
                 if (_dataShards[i].Active)
                 {
                     _dataShards[i].HoverOffset = (float)Math.Sin(time * 3f + i * 0.5f) * 6f;
-                    
-                    _dataShards[i].Hitbox = new Rectangle(
-                        (int)_dataShards[i].WorldPosition.X,
-                        (int)(_dataShards[i].WorldPosition.Y + _dataShards[i].HoverOffset),
-                        (int)(_dataShards[i].Texture.Width * 0.7f),
-                        (int)(_dataShards[i].Texture.Height * 0.7f)
-                    );
+                    _dataShards[i].Hitbox = new Rectangle((int)_dataShards[i].WorldPosition.X, (int)(_dataShards[i].WorldPosition.Y + _dataShards[i].HoverOffset), (int)(_dataShards[i].Texture.Width * 0.7f), (int)(_dataShards[i].Texture.Height * 0.7f));
                 }
             }
-            
             for (int i = 0; i < _repairParts.Length; i++)
             {
                 if (_repairParts[i].Active)
                 {
                     _repairParts[i].HoverOffset = (float)Math.Sin(time * 2.7f + i * 0.3f) * 8f;
-                    
-                    _repairParts[i].Hitbox = new Rectangle(
-                        (int)_repairParts[i].WorldPosition.X,
-                        (int)(_repairParts[i].WorldPosition.Y + _repairParts[i].HoverOffset),
-                        (int)(_repairParts[i].Texture.Width * 0.7f),
-                        (int)(_repairParts[i].Texture.Height * 0.7f)
-                    );
+                    _repairParts[i].Hitbox = new Rectangle((int)_repairParts[i].WorldPosition.X, (int)(_repairParts[i].WorldPosition.Y + _repairParts[i].HoverOffset), (int)(_repairParts[i].Texture.Width * 0.7f), (int)(_repairParts[i].Texture.Height * 0.7f));
                 }
             }
-            
             for (int i = 0; i < _chargeItems.Length; i++)
             {
                 if (_chargeItems[i].Active)
                 {
                     _chargeItems[i].HoverOffset = (float)Math.Sin(time * 3.3f + i * 0.7f) * 10f;
-                    
-                    _chargeItems[i].Hitbox = new Rectangle(
-                        (int)_chargeItems[i].WorldPosition.X,
-                        (int)(_chargeItems[i].WorldPosition.Y + _chargeItems[i].HoverOffset),
-                        (int)(_chargeItems[i].Texture.Width * 0.7f),
-                        (int)(_chargeItems[i].Texture.Height * 0.7f)
-                    );
+                    _chargeItems[i].Hitbox = new Rectangle((int)_chargeItems[i].WorldPosition.X, (int)(_chargeItems[i].WorldPosition.Y + _chargeItems[i].HoverOffset), (int)(_chargeItems[i].Texture.Width * 0.7f), (int)(_chargeItems[i].Texture.Height * 0.7f));
                 }
             }
         }
@@ -1253,24 +1072,8 @@ namespace WreckGame
             
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             DrawOverlay(overlayColor);
-            _spriteBatch.End();
-            
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-            _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(titleBgColor.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(true);
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(titleBgColor.ToVector4()); 
-            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
             DrawCenteredText("WRECK GAME", titleBgColor, titleBgColor, 3f, false, true, 8f, -100);
-            _spriteBatch.End();
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(titleColor.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
-            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
             DrawCenteredText("WRECK GAME", titleColor, Color.Transparent, 3f, false, false, 8f, -100);
-            _spriteBatch.End();
-            
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
             foreach (Button button in _startScreenButtons)
             {
                 DrawButton(button);
@@ -1286,24 +1089,8 @@ namespace WreckGame
             
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             DrawOverlay(overlayColor);
-            _spriteBatch.End();
-            
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-            _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(titleBgColor.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(true);
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(titleBgColor.ToVector4()); 
-            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
             DrawCenteredText("PAUSED", titleBgColor, titleBgColor, 3f, false, true, 8f, -100);
-            _spriteBatch.End();
-            
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(titleColor.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
-            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
             DrawCenteredText("PAUSED", titleColor, Color.Transparent, 3f, false, false, 8f, -100);
-            _spriteBatch.End();
-            
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
             foreach (Button button in _pauseScreenButtons)
             {
                 DrawButton(button);
@@ -1316,28 +1103,11 @@ namespace WreckGame
             Color overlayColor = new Color(255, 0, 0, 255);
             Color titleBgColor = Color.Red;
             Color titleColor = Color.White;
-            Color subtitleColor = Color.Black;
 
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             DrawOverlay(overlayColor);
-            _spriteBatch.End();
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-            _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(titleBgColor.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(true);
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(titleBgColor.ToVector4()); 
-            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
             DrawCenteredText("GAME OVER", titleBgColor, titleBgColor, 3f, false, true, 8f, -100);
-            _spriteBatch.End();
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(titleColor.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
-            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
             DrawCenteredText("GAME OVER", titleColor, Color.Transparent, 3f, false, false, 8f, -100);
-            _spriteBatch.End();
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
             foreach (Button button in _deathScreenButtons)
             {
                 DrawButton(button);
@@ -1348,7 +1118,6 @@ namespace WreckGame
         private void DrawGame()
         {
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, _viewMatrix);
-
             DrawMap();
             DrawCharacters();
             DrawDataShards();
@@ -1356,36 +1125,27 @@ namespace WreckGame
             DrawChargeItems();
             DrawExplosions();
             DrawDebugInfo();
-            
             _spriteBatch.End();
             
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             DrawStatusBars();
-            
             if (_damageFlashTimer > 0)
             {
                 float alpha = _damageFlashTimer / DAMAGE_FLASH_DURATION;
-                
                 int width = GraphicsDevice.Viewport.Width;
                 int height = GraphicsDevice.Viewport.Height;
-                
                 Color outerColor = new Color(1f, 0f, 0f, alpha * 0.6f);
                 DrawVignetteRectangle(0, 0, width, height, outerColor);
             }
-            
             _spriteBatch.End();
         }
 
         private void DrawVignetteRectangle(int x, int y, int width, int height, Color color)
         {
             int thickness = 80;
-            
             _spriteBatch.Draw(_pixelTexture, new Rectangle(x, y, width, thickness), color);
-            
             _spriteBatch.Draw(_pixelTexture, new Rectangle(x, y + height - thickness, width, thickness), color);
-            
             _spriteBatch.Draw(_pixelTexture, new Rectangle(x, y + thickness, thickness, height - 2 * thickness), color);
-            
             _spriteBatch.Draw(_pixelTexture, new Rectangle(x + width - thickness, y + thickness, thickness, height - 2 * thickness), color);
         }
 
@@ -1395,16 +1155,7 @@ namespace WreckGame
             {
                 if (_repairParts[i].Active)
                 {
-                    _spriteBatch.Draw(
-                        _repairParts[i].Texture,
-                        new Vector2(_repairParts[i].WorldPosition.X, _repairParts[i].WorldPosition.Y + _repairParts[i].HoverOffset),
-                        null,
-                        Color.White,
-                        0f,
-                        Vector2.Zero,
-                        0.7f,
-                        SpriteEffects.None,
-                        0f);
+                    _spriteBatch.Draw(_repairParts[i].Texture, new Vector2(_repairParts[i].WorldPosition.X, _repairParts[i].WorldPosition.Y + _repairParts[i].HoverOffset), null, Color.White, 0f, Vector2.Zero, 0.7f, SpriteEffects.None, 0f);
                 }
             }
         }
@@ -1415,16 +1166,7 @@ namespace WreckGame
             {
                 if (_chargeItems[i].Active)
                 {
-                    _spriteBatch.Draw(
-                        _chargeItems[i].Texture,
-                        new Vector2(_chargeItems[i].WorldPosition.X, _chargeItems[i].WorldPosition.Y + _chargeItems[i].HoverOffset),
-                        null,
-                        Color.White,
-                        0f,
-                        Vector2.Zero,
-                        0.7f,
-                        SpriteEffects.None,
-                        0f);
+                    _spriteBatch.Draw(_chargeItems[i].Texture, new Vector2(_chargeItems[i].WorldPosition.X, _chargeItems[i].WorldPosition.Y + _chargeItems[i].HoverOffset), null, Color.White, 0f, Vector2.Zero, 0.7f, SpriteEffects.None, 0f);
                 }
             }
         }
@@ -1435,45 +1177,13 @@ namespace WreckGame
             float barHeight = 20;
             float margin = 10;
             float padding = 2;
-            
             int screenX = (int)margin;
             int screenY = (int)(GraphicsDevice.Viewport.Height - margin - (barHeight * 2 + padding));
             
-            _spriteBatch.Draw(
-                _pixelTexture,
-                new Rectangle(
-                    screenX,
-                    screenY,
-                    (int)barWidth,
-                    (int)barHeight),
-                Color.DarkRed);
-            
-            _spriteBatch.Draw(
-                _pixelTexture,
-                new Rectangle(
-                    screenX,
-                    screenY,
-                    (int)(barWidth * _playerHP / 100),
-                    (int)barHeight),
-                Color.Red);
-            
-            _spriteBatch.Draw(
-                _pixelTexture,
-                new Rectangle(
-                    screenX,
-                    screenY + (int)(barHeight + padding),
-                    (int)barWidth,
-                    (int)barHeight),
-                Color.DarkGreen);
-            
-            _spriteBatch.Draw(
-                _pixelTexture,
-                new Rectangle(
-                    screenX,
-                    screenY + (int)(barHeight + padding),
-                    (int)(barWidth * _playerCharge / 100),
-                    (int)barHeight),
-                Color.Green);
+            _spriteBatch.Draw(_pixelTexture, new Rectangle(screenX, screenY, (int)barWidth, (int)barHeight), Color.DarkRed);
+            _spriteBatch.Draw(_pixelTexture, new Rectangle(screenX, screenY, (int)(barWidth * _playerHP / 100), (int)barHeight), Color.Red);
+            _spriteBatch.Draw(_pixelTexture, new Rectangle(screenX, screenY + (int)(barHeight + padding), (int)barWidth, (int)barHeight), Color.DarkGreen);
+            _spriteBatch.Draw(_pixelTexture, new Rectangle(screenX, screenY + (int)(barHeight + padding), (int)(barWidth * _playerCharge / 100), (int)barHeight), Color.Green);
         }
 
         private void DrawMap()
@@ -1482,23 +1192,9 @@ namespace WreckGame
             {
                 for (int x = 0; x < MAP_WIDTH_TILES + 2; x++)
                 {
-                    Texture2D tileTexture = (x == 0 || y == 0 || 
-                                        x == MAP_WIDTH_TILES + 1 || 
-                                        y == MAP_HEIGHT_TILES + 1) 
-                                        ? _borderTexture : _asphaltTexture;
-                    
+                    Texture2D tileTexture = (x == 0 || y == 0 || x == MAP_WIDTH_TILES + 1 || y == MAP_HEIGHT_TILES + 1) ? _borderTexture : _asphaltTexture;
                     Vector2 tileWorldPosition = new(x * TILE_SIZE, y * TILE_SIZE);
-                    
-                    _spriteBatch.Draw(
-                        tileTexture,
-                        tileWorldPosition,
-                        null,
-                        Color.White,
-                        0f,
-                        Vector2.Zero,
-                        1.0f,
-                        SpriteEffects.None,
-                        0f);
+                    _spriteBatch.Draw(tileTexture, tileWorldPosition, null, Color.White, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
                 }
             }
         }
@@ -1507,42 +1203,20 @@ namespace WreckGame
         {
             if (!_isPlayerDead)
             {
-                _spriteBatch.Draw(
-                    _droneTexture,
-                    new Vector2(_droneWorldPosition.X, _droneWorldPosition.Y + _hoverOffset),
-                    null,
-                    Color.White,
-                    0f,
-                    Vector2.Zero,
-                    1.0f,
-                    SpriteEffects.None,
-                    0f);
+                _spriteBatch.Draw(_droneTexture, new Vector2(_droneWorldPosition.X, _droneWorldPosition.Y + _hoverOffset), null, Color.White, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
             }
-            
             for (int i = 0; i < _enemies.Length; i++)
             {
                 if (_enemies[i].Active)
                 {
                     SpriteEffects effect = SpriteEffects.None;
-                    if (i == 0 && _enemies[i].Direction == -1)
-                        effect = SpriteEffects.FlipHorizontally;
+                    if (i == 0 && _enemies[i].Direction == -1) effect = SpriteEffects.FlipHorizontally;
                     else if (i == 2)
                     {
                         Vector2 toPlayer = _droneWorldPosition - _enemies[i].WorldPosition;
-                        if (toPlayer.X < 0)
-                            effect = SpriteEffects.FlipHorizontally;
+                        if (toPlayer.X < 0) effect = SpriteEffects.FlipHorizontally;
                     }
-                    
-                    _spriteBatch.Draw(
-                        _enemies[i].Texture, 
-                        new Vector2(_enemies[i].WorldPosition.X, _enemies[i].WorldPosition.Y + _enemies[i].HoverOffset), 
-                        null,
-                        Color.White,
-                        0f,
-                        Vector2.Zero,
-                        1.0f,
-                        effect,
-                        0f);
+                    _spriteBatch.Draw(_enemies[i].Texture, new Vector2(_enemies[i].WorldPosition.X, _enemies[i].WorldPosition.Y + _enemies[i].HoverOffset), null, Color.White, 0f, Vector2.Zero, 1.0f, effect, 0f);
                 }
             }
         }
@@ -1553,16 +1227,7 @@ namespace WreckGame
             {
                 if (_dataShards[i].Active)
                 {
-                    _spriteBatch.Draw(
-                        _dataShards[i].Texture,
-                        new Vector2(_dataShards[i].WorldPosition.X, _dataShards[i].WorldPosition.Y + _dataShards[i].HoverOffset),
-                        null,
-                        Color.White,
-                        0f,
-                        Vector2.Zero,
-                        0.7f,
-                        SpriteEffects.None,
-                        0f);
+                    _spriteBatch.Draw(_dataShards[i].Texture, new Vector2(_dataShards[i].WorldPosition.X, _dataShards[i].WorldPosition.Y + _dataShards[i].HoverOffset), null, Color.White, 0f, Vector2.Zero, 0.7f, SpriteEffects.None, 0f);
                 }
             }
         }
@@ -1573,7 +1238,6 @@ namespace WreckGame
             {
                 DrawExplosion(_explosionTextures[_currentExplosionFrame], _explosionPosition);
             }
-            
             if (_enemyExplosionActive && _enemyExplosionFrame < EXPLOSION_FRAME_COUNT)
             {
                 DrawExplosion(_explosionTextures[_enemyExplosionFrame], _enemyExplosionPosition);
@@ -1582,16 +1246,7 @@ namespace WreckGame
         
         private void DrawExplosion(Texture2D texture, Vector2 position)
         {
-            _spriteBatch.Draw(
-                texture,
-                position / _gameScale,
-                null,
-                Color.White,
-                0f,
-                new Vector2(texture.Width / 2, texture.Height / 2),
-                1.5f,
-                SpriteEffects.None,
-                0);
+            _spriteBatch.Draw(texture, position / _gameScale, null, Color.White, 0f, new Vector2(texture.Width / 2, texture.Height / 2), 1.5f, SpriteEffects.None, 0);
         }
 
         private void DrawDebugInfo()
@@ -1599,7 +1254,6 @@ namespace WreckGame
             if (_showHitboxes)
             {
                 DrawRectangleOutline(_playerHitbox, Color.White, 1);
-                
                 for (int i = 0; i < _enemies.Length; i++)
                 {
                     if (_enemies[i].Active)
@@ -1607,7 +1261,6 @@ namespace WreckGame
                         DrawRectangleOutline(_enemies[i].Hitbox, Color.White, 1);
                     }
                 }
-                
                 for (int i = 0; i < _dataShards.Length; i++)
                 {
                     if (_dataShards[i].Active)
@@ -1615,7 +1268,6 @@ namespace WreckGame
                         DrawRectangleOutline(_dataShards[i].Hitbox, Color.White, 1);
                     }
                 }
-                
                 for (int i = 0; i < _repairParts.Length; i++)
                 {
                     if (_repairParts[i].Active)
@@ -1623,7 +1275,6 @@ namespace WreckGame
                         DrawRectangleOutline(_repairParts[i].Hitbox, Color.White, 1);
                     }
                 }
-                
                 for (int i = 0; i < _chargeItems.Length; i++)
                 {
                     if (_chargeItems[i].Active)
@@ -1636,34 +1287,15 @@ namespace WreckGame
 
         private void DrawRectangleOutline(Rectangle rect, Color color, int thickness = 1)
         {
-            _spriteBatch.Draw(_pixelTexture, 
-                new Rectangle(rect.Left, rect.Top, rect.Width, thickness), 
-                color);
-            
-            _spriteBatch.Draw(_pixelTexture, 
-                new Rectangle(rect.Left, rect.Bottom - thickness, rect.Width, thickness), 
-                color);
-            
-            _spriteBatch.Draw(_pixelTexture, 
-                new Rectangle(rect.Left, rect.Top, thickness, rect.Height), 
-                color);
-            
-            _spriteBatch.Draw(_pixelTexture, 
-                new Rectangle(rect.Right - thickness, rect.Top, thickness, rect.Height), 
-                color);
+            _spriteBatch.Draw(_pixelTexture, new Rectangle(rect.Left, rect.Top, rect.Width, thickness), color);
+            _spriteBatch.Draw(_pixelTexture, new Rectangle(rect.Left, rect.Bottom - thickness, rect.Width, thickness), color);
+            _spriteBatch.Draw(_pixelTexture, new Rectangle(rect.Left, rect.Top, thickness, rect.Height), color);
+            _spriteBatch.Draw(_pixelTexture, new Rectangle(rect.Right - thickness, rect.Top, thickness, rect.Height), color);
         }
         
         private void DrawOverlay(Color color)
         {
-            _spriteBatch.Draw(
-                _pixelTexture,
-                new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height),
-                null,
-                color,
-                0f,
-                Vector2.Zero,
-                SpriteEffects.None,
-                0f);
+            _spriteBatch.Draw(_pixelTexture, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), null, color, 0f, Vector2.Zero, SpriteEffects.None, 0f);
         }
         
         private void DrawColoredText(string text, Vector2 position, Color textColor, Color backgroundColor, float scale, bool beginBatch = true, bool showBackground = false, float letterSpacing = 0f)
@@ -1674,8 +1306,7 @@ namespace WreckGame
 
             if (beginBatch)
             {
-                _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, 
-                                SamplerState.PointClamp, null, null, _colorReplaceEffect);
+                _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             }
 
             foreach (char c in text)
@@ -1685,7 +1316,6 @@ namespace WreckGame
                     pos.X += spacing;
                     continue;
                 }
-
                 if (_fontTextures.TryGetValue(c, out Texture2D letterTexture))
                 {
                     if (showBackground)
@@ -1695,41 +1325,9 @@ namespace WreckGame
                             pos.X - ((_fontBackgroundTexture.Width * backgroundScale - letterTexture.Width * scale) / 2),
                             pos.Y - ((_fontBackgroundTexture.Height * backgroundScale - letterTexture.Height * scale) / 2)
                         );
-
-                        _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(backgroundColor.ToVector4());
-                        _colorReplaceEffect.Parameters["IsBackground"].SetValue(true);
-                        _colorReplaceEffect.Parameters["TextColor"].SetValue(Color.Transparent.ToVector4());
-                        _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-                        _spriteBatch.Draw(
-                            _fontBackgroundTexture,
-                            backgroundPosition,
-                            null,
-                            Color.White,
-                            0f,
-                            Vector2.Zero,
-                            backgroundScale,
-                            SpriteEffects.None,
-                            0f
-                        );
+                        _spriteBatch.Draw(_fontBackgroundTexture, backgroundPosition, null, backgroundColor, 0f, Vector2.Zero, backgroundScale, SpriteEffects.None, 0f);
                     }
-
-                    _colorReplaceEffect.Parameters["TextColor"].SetValue(textColor.ToVector4());
-                    _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
-                    _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(Color.Transparent.ToVector4());
-                    _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-                    _spriteBatch.Draw(
-                        letterTexture,
-                        pos,
-                        null,
-                        Color.White,
-                        0f,
-                        Vector2.Zero,
-                        scale,
-                        SpriteEffects.None,
-                        0f
-                    );
+                    _spriteBatch.Draw(letterTexture, pos, null, textColor, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
                 }
                 pos.X += spacing;
             }
@@ -1745,25 +1343,16 @@ namespace WreckGame
             float baseSpacing = 32 * scale;
             float spacing = baseSpacing + letterSpacing * scale;
             float textWidth = text.Length * spacing;
-            
-            Vector2 position = new(
-                (GraphicsDevice.Viewport.Width - textWidth) / 2,
-                (GraphicsDevice.Viewport.Height - 32 * scale) / 2 + yOffset);
-                    
+            Vector2 position = new((GraphicsDevice.Viewport.Width - textWidth) / 2, (GraphicsDevice.Viewport.Height - 32 * scale) / 2 + yOffset);
             DrawColoredText(text, position, textColor, backgroundColor, scale, beginBatch, showBackground, letterSpacing);
         }
 
         private void DrawButton(Button button)
         {
             Color textColor = button.TextColor;
-            
             Vector2 textSize = MeasureText(button.Text, button.Scale);
-            Vector2 textPos = new Vector2(
-                button.Bounds.X + (button.Bounds.Width - textSize.X) / 2,
-                button.Bounds.Y + (button.Bounds.Height - textSize.Y) / 2);
-            
+            Vector2 textPos = new Vector2(button.Bounds.X + (button.Bounds.Width - textSize.X) / 2, button.Bounds.Y + (button.Bounds.Height - textSize.Y) / 2);
             DrawColoredText(button.Text, textPos, textColor, Color.Transparent, button.Scale, false, false, 0f);
-            
             if (_showHitboxes)
             {
                 DrawRectangleOutline(button.Bounds, Color.Yellow, 2);
@@ -1774,7 +1363,6 @@ namespace WreckGame
         {
             float width = 0;
             float height = 32 * scale;
-            
             foreach (char c in text)
             {
                 if (c == ' ')
@@ -1786,35 +1374,17 @@ namespace WreckGame
                     width += 32 * scale;
                 }
             }
-            
             return new Vector2(width, height);
         }
 
-        private readonly Vector2 _cursorHotspot = new Vector2(16,16);
+        private readonly Vector2 _cursorHotspot = new Vector2(16, 16);
         private void DrawCursor()
         {
             MouseState mouse = Mouse.GetState();
             Vector2 position = new Vector2(mouse.X, mouse.Y);
             
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-            
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(_cursorColor.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
-            _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(Color.Transparent.ToVector4());
-            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-            
-            _spriteBatch.Draw(
-                _cursorTexture,
-                position,
-                null,
-                Color.White,
-                0f,
-                _cursorHotspot,
-                1.0f,
-                SpriteEffects.None,
-                0f
-            );
-            
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
+            _spriteBatch.Draw(_cursorTexture, position, null, _cursorColor, 0f, _cursorHotspot, 1.0f, SpriteEffects.None, 0f);
             _spriteBatch.End();
         }
         #endregion

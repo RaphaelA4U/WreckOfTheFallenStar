@@ -13,12 +13,6 @@
 
 #---------------------------------- Content ---------------------------------#
 
-#begin ColorReplace.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:ColorReplace.fx
-
 #begin entities/drone_enemy.png
 /importer:TextureImporter
 /processor:TextureProcessor
