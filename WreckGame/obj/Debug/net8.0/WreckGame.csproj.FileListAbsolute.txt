@@ -74,3 +74,4 @@ C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\obj\Debug\net8.
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\obj\Debug\net8.0\WreckGame.pdb
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\obj\Debug\net8.0\WreckGame.genruntimeconfig.cache
 C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\obj\Debug\net8.0\ref\WreckGame.dll
+C:\Users\rdsru\Documents\cs_games\WreckOfTheFallenStar\WreckGame\bin\Debug\net8.0\Content\misc\cursor.xnb

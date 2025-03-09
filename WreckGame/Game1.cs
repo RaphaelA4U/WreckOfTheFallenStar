@@ -47,6 +47,8 @@ namespace WreckGame
         private Texture2D _debugTexture;
         private Dictionary<char, Texture2D> _fontTextures;
         private Texture2D _fontBackgroundTexture;
+        private Texture2D _cursorTexture;
+        private Color _cursorColor = Color.White;
         #endregion
 
         #region Map
@@ -139,11 +141,30 @@ namespace WreckGame
         private Vector2 _enemyExplosionPosition;
         #endregion
 
+        #region Buttons
+        private class Button
+        {
+            public Rectangle Bounds;
+            public string Text;
+            public Color TextColor;
+            public float Scale;
+
+            public bool Contains(Point point)
+            {
+                return Bounds.Contains(point);
+            }
+        }
+
+        private Button[] _startScreenButtons;
+        private Button[] _pauseScreenButtons;
+        private Button[] _deathScreenButtons;
+        #endregion
+
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            IsMouseVisible = true;
+            IsMouseVisible = false;
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += OnWindowSizeChanged;
             _random = new Random();
@@ -157,7 +178,7 @@ namespace WreckGame
             _graphics.ApplyChanges();
             
             _enemies = new EnemyData[3];
-            
+
             base.Initialize();
         }
 
@@ -177,7 +198,88 @@ namespace WreckGame
             LoadFontTextures();
             LoadItemTextures();
             
+            _cursorTexture = Content.Load<Texture2D>("misc/cursor");
+            
+            InitializeButtons();
+            
             ResetGame();
+        }
+
+        private void InitializeButtons()
+        {
+            _startScreenButtons = new Button[2];
+            
+            _startScreenButtons[0] = new Button
+            {
+                Text = "START",
+                TextColor = Color.White,
+                Scale = 2.0f,
+                Bounds = CalculateButtonBounds("START", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50)
+            };
+
+            _startScreenButtons[1] = new Button
+            {
+                Text = "EXIT",
+                TextColor = Color.White,
+                Scale = 2.0f,
+                Bounds = CalculateButtonBounds("EXIT", 2.0f, GraphicsDevice.Viewport.Height / 2 + 130)
+            };
+            
+            _pauseScreenButtons = new Button[3];
+            
+            _pauseScreenButtons[0] = new Button
+            {
+                Text = "RESUME",
+                TextColor = Color.White,
+                Scale = 2.0f,
+                Bounds = CalculateButtonBounds("RESUME", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50)
+            };
+
+            _pauseScreenButtons[1] = new Button
+            {
+                Text = "RESTART",
+                TextColor = Color.White,
+                Scale = 2.0f,
+                Bounds = CalculateButtonBounds("RESTART", 2.0f, GraphicsDevice.Viewport.Height / 2 + 130)
+            };
+
+            _pauseScreenButtons[2] = new Button
+            {
+                Text = "EXIT",
+                TextColor = Color.White,
+                Scale = 2.0f,
+                Bounds = CalculateButtonBounds("EXIT", 2.0f, GraphicsDevice.Viewport.Height / 2 + 210)
+            };
+
+            _deathScreenButtons = new Button[2];
+
+            _deathScreenButtons[0] = new Button
+            {
+                Text = "RESTART",
+                TextColor = Color.White,
+                Scale = 2.0f,
+                Bounds = CalculateButtonBounds("RESTART", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50)
+            };
+
+            _deathScreenButtons[1] = new Button
+            {
+                Text = "EXIT",
+                TextColor = Color.White,
+                Scale = 2.0f,
+                Bounds = CalculateButtonBounds("EXIT", 2.0f, GraphicsDevice.Viewport.Height / 2 + 130)
+            };
+        }
+
+        private Rectangle CalculateButtonBounds(string text, float scale, int y)
+        {
+            Vector2 textSize = MeasureText(text, scale);
+            
+            int width = (int)textSize.X;
+            int height = 60;
+            
+            int x = GraphicsDevice.Viewport.Width / 2 - width / 2;
+            
+            return new Rectangle(x, y, width, height);
         }
 
         private void LoadItemTextures()
@@ -415,7 +517,24 @@ namespace WreckGame
 
         private void OnWindowSizeChanged(object sender, EventArgs e)
         {
-            // Handle window resize if needed
+            if (_startScreenButtons != null)
+            {
+                _startScreenButtons[0].Bounds = CalculateButtonBounds("START", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50);
+                _startScreenButtons[1].Bounds = CalculateButtonBounds("EXIT", 2.0f, GraphicsDevice.Viewport.Height / 2 + 130);
+            }
+            
+            if (_pauseScreenButtons != null)
+            {
+                _pauseScreenButtons[0].Bounds = CalculateButtonBounds("RESUME", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50);
+                _pauseScreenButtons[1].Bounds = CalculateButtonBounds("RESTART", 2.0f, GraphicsDevice.Viewport.Height / 2 + 130);
+                _pauseScreenButtons[2].Bounds = CalculateButtonBounds("EXIT", 2.0f, GraphicsDevice.Viewport.Height / 2 + 210);
+            }
+
+            if (_deathScreenButtons != null)
+            {
+                _deathScreenButtons[0].Bounds = CalculateButtonBounds("RESTART", 2.0f, GraphicsDevice.Viewport.Height / 2 + 50);
+                _deathScreenButtons[1].Bounds = CalculateButtonBounds("EXIT", 2.0f, GraphicsDevice.Viewport.Height / 2 + 130);
+            }
         }
         #endregion
 
@@ -426,11 +545,12 @@ namespace WreckGame
             MouseState mouse = Mouse.GetState();
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            HandleDebugInput(keyboard);
+            
             HandleGameStateInput(keyboard);
             
             if (_isGameStarted && !_isPlayerDead && !_isGamePaused)
             {
-                HandleDebugInput(keyboard);
                 UpdatePlayerMovement(keyboard, delta);
                 UpdateEnemyMovement(delta);
                 UpdateCollision();
@@ -483,27 +603,47 @@ namespace WreckGame
                 return;
             
             MouseState mouse = Mouse.GetState();
-            bool keyPressed = keyboard.GetPressedKeys().Length > 0 && _previousKeyboardState.GetPressedKeys().Length == 0;
-            
             Point mousePoint = new Point(mouse.X, mouse.Y);
-            Rectangle clientBounds = new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-            bool isMouseInClientArea = clientBounds.Contains(mousePoint);
             
-            bool mouseClicked = isMouseInClientArea && 
-                                mouse.LeftButton == ButtonState.Pressed && 
-                                _previousMouseState.LeftButton == ButtonState.Released;
-            
-            if (!_isGameStarted && (keyPressed || mouseClicked))
+            if (!_isGameStarted)
             {
-                _isGameStarted = true;
-                ResetGame();
+                if (mouse.LeftButton == ButtonState.Pressed && _previousMouseState.LeftButton == ButtonState.Released)
+                {
+                    if (_startScreenButtons[0].Contains(mousePoint))
+                    {
+                        _isGameStarted = true;
+                        ResetGame();
+                        return;
+                    }
+                    
+                    if (_startScreenButtons[1].Contains(mousePoint))
+                    {
+                        Exit();
+                        return;
+                    }
+                }
+                
                 return;
             }
-
-            if (_isPlayerDead && (keyPressed || mouseClicked))
+            
+            if (_isPlayerDead)
             {
-                ResetGame();
-                _isPlayerDead = false;
+                if (mouse.LeftButton == ButtonState.Pressed && _previousMouseState.LeftButton == ButtonState.Released)
+                {
+                    if (_deathScreenButtons[0].Contains(mousePoint))
+                    {
+                        ResetGame();
+                        _isPlayerDead = false;
+                        return;
+                    }
+                    
+                    if (_deathScreenButtons[1].Contains(mousePoint))
+                    {
+                        Exit();
+                        return;
+                    }
+                }
+                
                 return;
             }
             
@@ -513,10 +653,29 @@ namespace WreckGame
                 return;
             }
             
-            if (_isGamePaused && (keyPressed || mouseClicked))
+            if (_isGamePaused)
             {
-                _isGamePaused = false;
-                return;
+                if (mouse.LeftButton == ButtonState.Pressed && _previousMouseState.LeftButton == ButtonState.Released)
+                {
+                    if (_pauseScreenButtons[0].Contains(mousePoint))
+                    {
+                        _isGamePaused = false;
+                        return;
+                    }
+                    
+                    if (_pauseScreenButtons[1].Contains(mousePoint))
+                    {
+                        ResetGame();
+                        _isGamePaused = false;
+                        return;
+                    }
+                    
+                    if (_pauseScreenButtons[2].Contains(mousePoint))
+                    {
+                        Exit();
+                        return;
+                    }
+                }
             }
         }
 
@@ -533,12 +692,29 @@ namespace WreckGame
             }
 
             if (keyboard.IsKeyDown(Keys.LeftControl) && 
+                keyboard.IsKeyDown(Keys.LeftShift) &&
                 keyboard.IsKeyDown(Keys.C) && 
                 !(_previousKeyboardState.IsKeyDown(Keys.LeftControl) && 
+                _previousKeyboardState.IsKeyDown(Keys.LeftShift) &&
                 _previousKeyboardState.IsKeyDown(Keys.C)))
             {
                 _editMode = !_editMode;
                 _showHitboxes = !_showHitboxes;
+            }
+            
+            if (keyboard.IsKeyDown(Keys.LeftControl) && 
+                keyboard.IsKeyDown(Keys.LeftShift) &&
+                keyboard.IsKeyDown(Keys.K) && 
+                !(_previousKeyboardState.IsKeyDown(Keys.LeftControl) && 
+                _previousKeyboardState.IsKeyDown(Keys.LeftShift) &&
+                _previousKeyboardState.IsKeyDown(Keys.K)))
+            {
+                _playerHP = 0;
+                _isPlayerDead = true;
+                _explosionPosition = _droneWorldPosition * _gameScale;
+                _explosionActive = true;
+                _currentExplosionFrame = 0;
+                _frameTimer = 0f;
             }
         }
 
@@ -1064,6 +1240,8 @@ namespace WreckGame
                 DrawPauseScreen();
             }
             
+            DrawCursor();
+            
             base.Draw(gameTime);
         }
 
@@ -1072,43 +1250,31 @@ namespace WreckGame
             Color overlayColor = new Color(255, 165, 0, 255);
             Color titleBgColor = Color.Red;
             Color titleColor = Color.White;
-            Color subtitleColor = Color.Black;
-
+            
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             DrawOverlay(overlayColor);
             _spriteBatch.End();
-
+            
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-
             _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(titleBgColor.ToVector4());
             _colorReplaceEffect.Parameters["IsBackground"].SetValue(true);
             _colorReplaceEffect.Parameters["TextColor"].SetValue(titleBgColor.ToVector4()); 
             _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-            DrawCenteredText("START GAME", titleBgColor, titleBgColor, 3f, false, true, 8f);
-
+            DrawCenteredText("WRECK GAME", titleBgColor, titleBgColor, 3f, false, true, 8f, -100);
             _spriteBatch.End();
 
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-
             _colorReplaceEffect.Parameters["TextColor"].SetValue(titleColor.ToVector4());
             _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
             _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-            DrawCenteredText("START GAME", titleColor, Color.Transparent, 3f, false, false, 8f);
-
+            DrawCenteredText("WRECK GAME", titleColor, Color.Transparent, 3f, false, false, 8f, -100);
             _spriteBatch.End();
-
+            
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(subtitleColor.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
-            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-            DrawColoredText("Press any key to start",
-                new Vector2(GraphicsDevice.Viewport.Width / 2 - 350, GraphicsDevice.Viewport.Height / 2 + 100),
-                subtitleColor, Color.Transparent, 1f, false, false, 0f);
-
+            foreach (Button button in _startScreenButtons)
+            {
+                DrawButton(button);
+            }
             _spriteBatch.End();
         }
         
@@ -1117,43 +1283,31 @@ namespace WreckGame
             Color overlayColor = new Color(0, 0, 255, 255);
             Color titleBgColor = Color.Red;
             Color titleColor = Color.White;
-            Color subtitleColor = Color.Black;
-
+            
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             DrawOverlay(overlayColor);
             _spriteBatch.End();
-
+            
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-
             _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(titleBgColor.ToVector4());
             _colorReplaceEffect.Parameters["IsBackground"].SetValue(true);
             _colorReplaceEffect.Parameters["TextColor"].SetValue(titleBgColor.ToVector4()); 
             _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-            DrawCenteredText("PAUSED", titleBgColor, titleBgColor, 4f, false, true, 8f);
-
+            DrawCenteredText("PAUSED", titleBgColor, titleBgColor, 3f, false, true, 8f, -100);
             _spriteBatch.End();
-
+            
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-
             _colorReplaceEffect.Parameters["TextColor"].SetValue(titleColor.ToVector4());
             _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
             _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-            DrawCenteredText("PAUSED", titleColor, Color.Transparent, 4f, false, false, 8f);
-
+            DrawCenteredText("PAUSED", titleColor, Color.Transparent, 3f, false, false, 8f, -100);
             _spriteBatch.End();
-
+            
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(subtitleColor.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
-            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-            DrawColoredText("Press any key to resume",
-                new Vector2(GraphicsDevice.Viewport.Width / 2 - 350, GraphicsDevice.Viewport.Height / 2 + 100),
-                subtitleColor, Color.Transparent, 1f, false, false, 0f);
-
+            foreach (Button button in _pauseScreenButtons)
+            {
+                DrawButton(button);
+            }
             _spriteBatch.End();
         }
 
@@ -1169,36 +1323,25 @@ namespace WreckGame
             _spriteBatch.End();
 
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-
             _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(titleBgColor.ToVector4());
             _colorReplaceEffect.Parameters["IsBackground"].SetValue(true);
             _colorReplaceEffect.Parameters["TextColor"].SetValue(titleBgColor.ToVector4()); 
             _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-            DrawCenteredText("GAME OVER", titleBgColor, titleBgColor, 4f, false, true, 8f);
-
+            DrawCenteredText("GAME OVER", titleBgColor, titleBgColor, 3f, false, true, 8f, -100);
             _spriteBatch.End();
 
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-
             _colorReplaceEffect.Parameters["TextColor"].SetValue(titleColor.ToVector4());
             _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
             _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-            DrawCenteredText("GAME OVER", titleColor, Color.Transparent, 4f, false, false, 8f);
-
+            DrawCenteredText("GAME OVER", titleColor, Color.Transparent, 3f, false, false, 8f, -100);
             _spriteBatch.End();
 
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
-
-            _colorReplaceEffect.Parameters["TextColor"].SetValue(subtitleColor.ToVector4());
-            _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
-            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
-
-            DrawColoredText("Press any key to restart",
-                new Vector2(GraphicsDevice.Viewport.Width / 2 - 350, GraphicsDevice.Viewport.Height / 2 + 100),
-                subtitleColor, Color.Transparent, 1f, false, false, 0f);
-
+            foreach (Button button in _deathScreenButtons)
+            {
+                DrawButton(button);
+            }
             _spriteBatch.End();
         }
 
@@ -1597,7 +1740,7 @@ namespace WreckGame
             }
         }
 
-        private void DrawCenteredText(string text, Color textColor, Color backgroundColor, float scale, bool beginBatch = true, bool showBackground = false, float letterSpacing = 0f)
+        private void DrawCenteredText(string text, Color textColor, Color backgroundColor, float scale, bool beginBatch = true, bool showBackground = false, float letterSpacing = 0f, float yOffset = 0)
         {
             float baseSpacing = 32 * scale;
             float spacing = baseSpacing + letterSpacing * scale;
@@ -1605,9 +1748,74 @@ namespace WreckGame
             
             Vector2 position = new(
                 (GraphicsDevice.Viewport.Width - textWidth) / 2,
-                (GraphicsDevice.Viewport.Height - 32 * scale) / 2);
-                
+                (GraphicsDevice.Viewport.Height - 32 * scale) / 2 + yOffset);
+                    
             DrawColoredText(text, position, textColor, backgroundColor, scale, beginBatch, showBackground, letterSpacing);
+        }
+
+        private void DrawButton(Button button)
+        {
+            Color textColor = button.TextColor;
+            
+            Vector2 textSize = MeasureText(button.Text, button.Scale);
+            Vector2 textPos = new Vector2(
+                button.Bounds.X + (button.Bounds.Width - textSize.X) / 2,
+                button.Bounds.Y + (button.Bounds.Height - textSize.Y) / 2);
+            
+            DrawColoredText(button.Text, textPos, textColor, Color.Transparent, button.Scale, false, false, 0f);
+            
+            if (_showHitboxes)
+            {
+                DrawRectangleOutline(button.Bounds, Color.Yellow, 2);
+            }
+        }
+
+        private Vector2 MeasureText(string text, float scale)
+        {
+            float width = 0;
+            float height = 32 * scale;
+            
+            foreach (char c in text)
+            {
+                if (c == ' ')
+                {
+                    width += 32 * scale;
+                }
+                else if (_fontTextures.TryGetValue(c, out Texture2D texture))
+                {
+                    width += 32 * scale;
+                }
+            }
+            
+            return new Vector2(width, height);
+        }
+
+        private readonly Vector2 _cursorHotspot = new Vector2(16,16);
+        private void DrawCursor()
+        {
+            MouseState mouse = Mouse.GetState();
+            Vector2 position = new Vector2(mouse.X, mouse.Y);
+            
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, _colorReplaceEffect);
+            
+            _colorReplaceEffect.Parameters["TextColor"].SetValue(_cursorColor.ToVector4());
+            _colorReplaceEffect.Parameters["IsBackground"].SetValue(false);
+            _colorReplaceEffect.Parameters["BackgroundColor"].SetValue(Color.Transparent.ToVector4());
+            _colorReplaceEffect.CurrentTechnique.Passes[0].Apply();
+            
+            _spriteBatch.Draw(
+                _cursorTexture,
+                position,
+                null,
+                Color.White,
+                0f,
+                _cursorHotspot,
+                1.0f,
+                SpriteEffects.None,
+                0f
+            );
+            
+            _spriteBatch.End();
         }
         #endregion
     }
