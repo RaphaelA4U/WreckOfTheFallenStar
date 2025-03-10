@@ -15,6 +15,7 @@ namespace WreckGame
         private int _draggedDataShardIndex = -1;
         private int _draggedRepairPartIndex = -1;
         private int _draggedChargeItemIndex = -1;
+        private int _draggedButtonIndex = -1;
         private Vector2 _dragOffset = Vector2.Zero;
 
         #region Constants
@@ -157,6 +158,29 @@ namespace WreckGame
         private Button[] _startScreenButtons;
         private Button[] _pauseScreenButtons;
         private Button[] _deathScreenButtons;
+
+        private struct InteractiveButton
+        {
+            public Texture2D Texture;
+            public Texture2D PressedTexture;
+            public Vector2 Position;
+            public Vector2 WorldPosition;
+            public float HoverOffset;
+            public Rectangle Hitbox;
+            public bool Active;
+            public bool IsPressed;
+            public float PressedTimer;
+            public bool ShowPrompt;
+        }
+
+        private InteractiveButton _button;
+        private Texture2D _buttonTexture;
+        private Texture2D _buttonPressedTexture;
+        private bool _showButtonNotification;
+        private float _buttonNotificationTimer;
+        private const float BUTTON_PRESSED_DURATION = 1.0f;
+        private const float BUTTON_NOTIFICATION_DURATION = 3.0f;
+        private const float BUTTON_INTERACTION_DISTANCE = 64f;
         #endregion
 
         public Game1()
@@ -190,12 +214,43 @@ namespace WreckGame
             LoadDebugTextures();
             LoadFontTextures();
             LoadItemTextures();
+            LoadButtonTextures();
             
             _cursorTexture = Content.Load<Texture2D>("misc/cursor");
             
             InitializeButtons();
             
             ResetGame();
+        }
+
+        private void LoadButtonTextures()
+        {
+            _buttonTexture = Content.Load<Texture2D>("interactives/button");
+            _buttonPressedTexture = Content.Load<Texture2D>("interactives/button_pressed");
+        }
+
+        private void InitializeButton()
+        {
+            float minX = TILE_SIZE;
+            float minY = TILE_SIZE;
+            float maxX = MAP_WIDTH_TILES * TILE_SIZE - TILE_SIZE;
+            float maxY = MAP_HEIGHT_TILES * TILE_SIZE - TILE_SIZE;
+
+            _button.Texture = _buttonTexture;
+            _button.PressedTexture = _buttonPressedTexture;
+            _button.Active = true;
+            _button.IsPressed = false;
+            _button.PressedTimer = 0f;
+            _button.ShowPrompt = false;
+            _button.HoverOffset = 0f;
+            _button.WorldPosition = new Vector2(_random.Next((int)minX, (int)maxX), _random.Next((int)minY, (int)maxY));
+            _button.Position = _button.WorldPosition * _gameScale;
+            int width = _button.Texture.Width;
+            int height = _button.Texture.Height;
+            _button.Hitbox = new Rectangle((int)_button.WorldPosition.X, (int)_button.WorldPosition.Y, width, height);
+
+            _showButtonNotification = false;
+            _buttonNotificationTimer = 0f;
         }
 
         private void InitializeButtons()
@@ -366,6 +421,7 @@ namespace WreckGame
             InitializeDataShards();
             InitializeRepairParts();
             InitializeChargeItems();
+            InitializeButton();
         }
 
         private void InitializeDataShards()
@@ -483,6 +539,8 @@ namespace WreckGame
                 UpdateEnemyMovement(delta);
                 UpdateCollision();
                 CheckEnemyCollisions();
+                UpdateButton(delta);
+                HandleButtonInteraction(keyboard);
                 
                 if (_damageFlashTimer > 0)
                 {
@@ -646,6 +704,12 @@ namespace WreckGame
             
             if (mouse.RightButton == ButtonState.Pressed && _previousMouseState.RightButton == ButtonState.Released)
             {
+                if (_button.Active && _button.Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
+                {
+                    _button.Active = false;
+                    return;
+                }
+
                 for (int i = 0; i < _enemies.Length; i++)
                 {
                     if (_enemies[i].Active && _enemies[i].Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
@@ -684,6 +748,18 @@ namespace WreckGame
             {
                 if (!_isDragging && _previousMouseState.LeftButton == ButtonState.Released)
                 {
+                    if (_button.Active && _button.Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
+                    {
+                        _isDragging = true;
+                        _draggedEnemyIndex = -1;
+                        _draggedDataShardIndex = -1;
+                        _draggedRepairPartIndex = -1;
+                        _draggedChargeItemIndex = -1;
+                        _draggedButtonIndex = -2;
+                        _dragOffset = _button.WorldPosition - worldPosition;
+                        return;
+                    }
+
                     for (int i = 0; i < _enemies.Length; i++)
                     {
                         if (_enemies[i].Active && _enemies[i].Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
@@ -742,6 +818,18 @@ namespace WreckGame
                     Vector2 newPosition = worldPosition + _dragOffset;
                     newPosition.X = MathHelper.Clamp(newPosition.X, minX, maxX);
                     newPosition.Y = MathHelper.Clamp(newPosition.Y, minY, maxY);
+
+                    if (_draggedButtonIndex == -2)
+                    {
+                        _button.WorldPosition = newPosition;
+                        _button.Position = _button.WorldPosition * _gameScale;
+                        _button.Hitbox = new Rectangle(
+                            (int)_button.WorldPosition.X,
+                            (int)_button.WorldPosition.Y,
+                            _button.Texture.Width,
+                            _button.Texture.Height
+                        );
+                    }
                     
                     if (_draggedEnemyIndex >= 0)
                     {
@@ -796,6 +884,7 @@ namespace WreckGame
                 _draggedDataShardIndex = -1;
                 _draggedRepairPartIndex = -1;
                 _draggedChargeItemIndex = -1;
+                _draggedButtonIndex = -1;
             }
         }
 
@@ -999,6 +1088,13 @@ namespace WreckGame
             _enemies[1].HoverOffset = (float)Math.Sin(time * 3.5f) * 12f;
             _enemies[2].HoverOffset = (float)Math.Sin(time * 4.5f) * 8f;
             
+            _button.Hitbox = new Rectangle(
+                (int)_button.WorldPosition.X,
+                (int)_button.WorldPosition.Y,
+                _button.Texture.Width,
+                _button.Texture.Height
+            );
+
             if (_editMode)
             {
                 for (int i = 0; i < _enemies.Length; i++)
@@ -1034,6 +1130,88 @@ namespace WreckGame
                     _chargeItems[i].Hitbox = new Rectangle((int)_chargeItems[i].WorldPosition.X, (int)(_chargeItems[i].WorldPosition.Y + _chargeItems[i].HoverOffset), (int)(_chargeItems[i].Texture.Width * 0.7f), (int)(_chargeItems[i].Texture.Height * 0.7f));
                 }
             }
+        }
+
+        private void UpdateButton(float delta)
+        {
+            if (!_button.Active) return;
+            
+            Vector2 playerToButton = _button.WorldPosition - _droneWorldPosition;
+            float distance = playerToButton.Length();
+            _button.ShowPrompt = distance < BUTTON_INTERACTION_DISTANCE;
+            
+            if (_button.IsPressed)
+            {
+                _button.PressedTimer += delta;
+                if (_button.PressedTimer >= BUTTON_PRESSED_DURATION)
+                {
+                    _button.IsPressed = false;
+                    _button.PressedTimer = 0f;
+                }
+            }
+            
+            if (_showButtonNotification)
+            {
+                _buttonNotificationTimer += delta;
+                if (_buttonNotificationTimer >= BUTTON_NOTIFICATION_DURATION)
+                {
+                    _showButtonNotification = false;
+                    _buttonNotificationTimer = 0f;
+                }
+            }
+            
+            _button.Hitbox = new Rectangle(
+                (int)_button.WorldPosition.X,
+                (int)(_button.WorldPosition.Y + _button.HoverOffset),
+                _button.Texture.Width,
+                _button.Texture.Height
+            );
+        }
+
+        private void HandleButtonInteraction(KeyboardState keyboard)
+        {
+            if (_editMode || !_button.Active || _button.IsPressed || !_button.ShowPrompt) return;
+            
+            if (keyboard.IsKeyDown(Keys.E) && _previousKeyboardState.IsKeyUp(Keys.E))
+            {
+                ActivateButton();
+            }
+            
+            MouseState mouse = Mouse.GetState();
+            Vector2 screenPosition = new Vector2(mouse.X, mouse.Y);
+            Vector2 worldPosition = Vector2.Transform(screenPosition, Matrix.Invert(_viewMatrix));
+            
+            if (mouse.LeftButton == ButtonState.Pressed && _previousMouseState.LeftButton == ButtonState.Released)
+            {
+                if (_button.Hitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
+                {
+                    ActivateButton();
+                }
+                
+                Vector2 promptPosition = new Vector2(
+                    _button.WorldPosition.X + _button.Texture.Width + 5,
+                    _button.WorldPosition.Y + _button.HoverOffset
+                );
+                Rectangle promptHitbox = new Rectangle(
+                    (int)promptPosition.X,
+                    (int)promptPosition.Y,
+                    32,
+                    32
+                );
+                
+                if (promptHitbox.Contains((int)worldPosition.X, (int)worldPosition.Y))
+                {
+                    ActivateButton();
+                }
+            }
+        }
+
+        private void ActivateButton()
+        {
+            _button.IsPressed = true;
+            _button.PressedTimer = 0f;
+            _showButtonNotification = true;
+            _buttonNotificationTimer = 0f;
         }
         #endregion
 
@@ -1126,6 +1304,7 @@ namespace WreckGame
             DrawChargeItems();
             DrawExplosions();
             DrawDebugInfo();
+            DrawButton();
             _spriteBatch.End();
             
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
@@ -1138,6 +1317,7 @@ namespace WreckGame
                 Color outerColor = new Color(1f, 0f, 0f, alpha * 0.6f);
                 DrawVignetteRectangle(0, 0, width, height, outerColor);
             }
+            DrawButtonNotification();
             _spriteBatch.End();
         }
 
@@ -1371,6 +1551,82 @@ namespace WreckGame
             if (_showHitboxes)
             {
                 DrawRectangleOutline(button.Bounds, Color.Yellow, 2);
+            }
+        }
+
+        private void DrawButton()
+        {
+            if (!_button.Active) return;
+            
+            Texture2D currentTexture = _button.IsPressed ? _button.PressedTexture : _button.Texture;
+            _spriteBatch.Draw(
+                currentTexture,
+                new Vector2(_button.WorldPosition.X, _button.WorldPosition.Y),
+                null,
+                Color.White,
+                0f,
+                Vector2.Zero,
+                1.0f,
+                SpriteEffects.None,
+                0f
+            );
+            
+            if (_button.ShowPrompt && !_button.IsPressed)
+            {
+                Vector2 promptPosition = new Vector2(
+                    _button.WorldPosition.X + _button.Texture.Width - 10, 
+                    _button.WorldPosition.Y + _button.Texture.Height - 10
+                );
+                
+                if (_fontTextures.TryGetValue('E', out Texture2D eTexture))
+                {
+                    float textScale = 0.4f;
+                    float backgroundScale = textScale * 1.3f;
+                    
+                    Color anthraciteColor = new Color(40, 40, 40);
+                    
+                    Vector2 backgroundPosition = new Vector2(
+                        promptPosition.X - ((_fontBackgroundTexture.Width * backgroundScale - eTexture.Width * textScale) / 2),
+                        promptPosition.Y - ((_fontBackgroundTexture.Height * backgroundScale - eTexture.Height * textScale) / 2)
+                    );
+                    
+                    _spriteBatch.Draw(
+                        _fontBackgroundTexture,
+                        backgroundPosition,
+                        null,
+                        anthraciteColor,
+                        0f,
+                        Vector2.Zero,
+                        backgroundScale,
+                        SpriteEffects.None,
+                        0f
+                    );
+                    
+                    _spriteBatch.Draw(
+                        eTexture,
+                        promptPosition,
+                        null,
+                        Color.White,
+                        0f,
+                        Vector2.Zero,
+                        textScale,
+                        SpriteEffects.None,
+                        0f
+                    );
+                }
+            }
+            
+            if (_showHitboxes)
+            {
+                DrawRectangleOutline(_button.Hitbox, Color.Purple, 1);
+            }
+        }
+
+        private void DrawButtonNotification()
+        {
+            if (_showButtonNotification)
+            {
+                DrawCenteredText("BUTTON PRESSED", Color.Green, Color.Transparent, 2f, false);
             }
         }
 
