@@ -67,6 +67,19 @@ namespace WreckGame
         private int _playerHP = 100;
         private int _playerCharge = 100;
         private float _chargeTimer = 0f;
+        private float _playerDamageCooldownTimer = 0f;
+        private const float DAMAGE_COOLDOWN_DURATION = 1.0f;
+
+        private enum DeathReason
+        {
+            DebugKill,
+            Unknown,
+            EnemyCollision,
+            EnemyBullet,
+            EnergyDepleted
+        }
+
+        private DeathReason _deathReason = DeathReason.Unknown;
         #endregion
 
         #region Enemies
@@ -80,6 +93,13 @@ namespace WreckGame
             public float Speed;
             public int Direction;
             public bool Active;
+            public int HP;
+            public float DamageFlashTimer;
+            public Vector2 Velocity;
+            public float DamageCooldownTimer;
+            public bool CanShoot;
+            public float ShootCooldown;
+            public float ShootTimer;
         }
 
         private EnemyData[] _enemies;
@@ -115,6 +135,26 @@ namespace WreckGame
             public Rectangle Hitbox;
             public bool Active;
         }
+
+        private struct Bullet
+        {
+            public Vector2 Position;
+            public Vector2 Direction;
+            public float Speed;
+            public bool Active;
+            public Rectangle Hitbox;
+            public float LifeTime;
+            public bool IsEnemyBullet;
+        }
+
+        private Bullet[] _bullets;
+        private const int MAX_BULLETS = 50;
+        private const float BULLET_SPEED = 400f;
+        private const float BULLET_MAX_LIFETIME = 2.0f;
+        private const int BULLET_DAMAGE = 10;
+        private const int BULLET_ENERGY_COST = 1;
+        private const float SHOOT_COOLDOWN = 0.15f;
+        private float _shootCooldownTimer = 0f;
 
         private DataShard[] _dataShards;
         private RepairPart[] _repairParts;
@@ -200,7 +240,7 @@ namespace WreckGame
             _graphics.PreferredBackBufferHeight = 720;
             _graphics.ApplyChanges();
             
-            _enemies = new EnemyData[3];
+            _enemies = new EnemyData[6];
             base.Initialize();
         }
 
@@ -214,6 +254,17 @@ namespace WreckGame
             LoadDebugTextures();
             LoadFontTextures();
             LoadItemTextures();
+
+            _bullets = new Bullet[MAX_BULLETS];
+            for (int i = 0; i < _bullets.Length; i++)
+            {
+                _bullets[i] = new Bullet
+                {
+                    Active = false,
+                    Speed = BULLET_SPEED
+                };
+            }
+
             LoadButtonTextures();
             
             _cursorTexture = Content.Load<Texture2D>("misc/cursor");
@@ -357,6 +408,9 @@ namespace WreckGame
             _enemies[0].Texture = Content.Load<Texture2D>("entities/drone_enemy");
             _enemies[1].Texture = Content.Load<Texture2D>("entities/drone_enemy1");
             _enemies[2].Texture = Content.Load<Texture2D>("entities/drone_enemy2");
+            _enemies[3].Texture = Content.Load<Texture2D>("entities/drone_enemy3");
+            _enemies[4].Texture = Content.Load<Texture2D>("entities/drone_enemy4");
+            _enemies[5].Texture = Content.Load<Texture2D>("entities/drone_enemy5");
         }
 
         private void LoadExplosionTextures()
@@ -393,30 +447,85 @@ namespace WreckGame
 
         private void ResetGame()
         {
+            _gameScale = 2.0f;
+            _deathReason = DeathReason.Unknown;
+
             _droneWorldPosition = new Vector2(MAP_WIDTH_TILES * TILE_SIZE / 2, MAP_HEIGHT_TILES * TILE_SIZE / 2);
             _dronePosition = _droneWorldPosition * _gameScale;
             _droneVelocity = Vector2.Zero;
             _playerHP = 100;
             _playerCharge = 100;
             _chargeTimer = 0f;
+            _playerDamageCooldownTimer = -1f;
             
             _enemies[0].WorldPosition = new Vector2(_droneWorldPosition.X, _droneWorldPosition.Y - 160);
             _enemies[0].Position = _enemies[0].WorldPosition * _gameScale;
             _enemies[0].Direction = 1;
             _enemies[0].Active = true;
             _enemies[0].Speed = 80f;
+            _enemies[0].HP = 100;
+            _enemies[0].DamageFlashTimer = 0f;
+            _enemies[0].DamageCooldownTimer = 0f;
+            _enemies[0].Velocity = Vector2.Zero;
             
             _enemies[1].WorldPosition = new Vector2(_droneWorldPosition.X + 160, _droneWorldPosition.Y);
             _enemies[1].Position = _enemies[1].WorldPosition * _gameScale;
             _enemies[1].Direction = 1;
             _enemies[1].Active = true;
             _enemies[1].Speed = 60f;
+            _enemies[1].HP = 100;
+            _enemies[1].DamageFlashTimer = 0f;
+            _enemies[1].DamageCooldownTimer = 0f;
+            _enemies[1].Velocity = Vector2.Zero;
             
             _enemies[2].WorldPosition = new Vector2(_droneWorldPosition.X - 160, _droneWorldPosition.Y);
             _enemies[2].Position = _enemies[2].WorldPosition * _gameScale;
             _enemies[2].Direction = 1;
             _enemies[2].Active = true;
             _enemies[2].Speed = 50f;
+            _enemies[2].HP = 100;
+            _enemies[2].DamageFlashTimer = 0f;
+            _enemies[2].DamageCooldownTimer = 0f;
+            _enemies[2].Velocity = Vector2.Zero;
+
+            _enemies[3].WorldPosition = new Vector2(_droneWorldPosition.X + 250, _droneWorldPosition.Y - 100);
+            _enemies[3].Position = _enemies[3].WorldPosition * _gameScale;
+            _enemies[3].Direction = 1;
+            _enemies[3].Active = true;
+            _enemies[3].Speed = 70f;
+            _enemies[3].HP = 100;
+            _enemies[3].DamageFlashTimer = 0f;
+            _enemies[3].DamageCooldownTimer = 0f;
+            _enemies[3].Velocity = Vector2.Zero;
+            _enemies[3].CanShoot = true;
+            _enemies[3].ShootCooldown = 1.0f;
+            _enemies[3].ShootTimer = 0.5f;
+
+            _enemies[4].WorldPosition = new Vector2(_droneWorldPosition.X - 250, _droneWorldPosition.Y - 100);
+            _enemies[4].Position = _enemies[4].WorldPosition * _gameScale;
+            _enemies[4].Direction = 1;
+            _enemies[4].Active = true;
+            _enemies[4].Speed = 55f;
+            _enemies[4].HP = 100;
+            _enemies[4].DamageFlashTimer = 0f;
+            _enemies[4].DamageCooldownTimer = 0f;
+            _enemies[4].Velocity = Vector2.Zero;
+            _enemies[4].CanShoot = true;
+            _enemies[4].ShootCooldown = 1.0f;
+            _enemies[4].ShootTimer = 0.5f;
+
+            _enemies[5].WorldPosition = new Vector2(_droneWorldPosition.X + 200, _droneWorldPosition.Y + 200);
+            _enemies[5].Position = _enemies[5].WorldPosition * _gameScale;
+            _enemies[5].Direction = 1;
+            _enemies[5].Active = true;
+            _enemies[5].Speed = 40f;
+            _enemies[5].HP = 120;
+            _enemies[5].DamageFlashTimer = 0f;
+            _enemies[5].DamageCooldownTimer = 0f;
+            _enemies[5].Velocity = Vector2.Zero;
+            _enemies[5].CanShoot = true;
+            _enemies[5].ShootCooldown = 1.0f;
+            _enemies[5].ShootTimer = 0.5f;
 
             InitializeDataShards();
             InitializeRepairParts();
@@ -538,6 +647,7 @@ namespace WreckGame
                 UpdatePlayerMovement(keyboard, delta);
                 UpdateEnemyMovement(delta);
                 UpdateCollision();
+                HandleEnemyShooting(delta);
                 CheckEnemyCollisions();
                 UpdateButton(delta);
                 HandleButtonInteraction(keyboard);
@@ -545,6 +655,11 @@ namespace WreckGame
                 if (_damageFlashTimer > 0)
                 {
                     _damageFlashTimer -= delta;
+                }
+
+                if (_playerDamageCooldownTimer > -1)
+                {
+                    _playerDamageCooldownTimer -= delta;
                 }
                 
                 if (!_editMode)
@@ -557,6 +672,7 @@ namespace WreckGame
                         if (_playerCharge <= 0)
                         {
                             _isPlayerDead = true;
+                            _deathReason = DeathReason.EnergyDepleted;
                             Vector2 collisionPosition = _droneWorldPosition;
                             _explosionPosition = collisionPosition * _gameScale;
                             _explosionActive = true;
@@ -567,6 +683,8 @@ namespace WreckGame
                 }
             }
             
+            HandlePlayerShooting(gameTime);
+            UpdateBullets(delta);
             UpdateExplosions(delta);
             UpdateHoverEffects(gameTime);
             
@@ -684,6 +802,7 @@ namespace WreckGame
             {
                 _playerHP = 0;
                 _isPlayerDead = true;
+                _deathReason = DeathReason.DebugKill;
                 _explosionPosition = _droneWorldPosition * _gameScale;
                 _explosionActive = true;
                 _currentExplosionFrame = 0;
@@ -943,8 +1062,48 @@ namespace WreckGame
             float minY = TILE_SIZE;
             float maxX = MAP_WIDTH_TILES * TILE_SIZE;
             float maxY = MAP_HEIGHT_TILES * TILE_SIZE;
+            
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                if (!_enemies[i].Active) continue;
+                
+                if (_enemies[i].DamageFlashTimer > 0)
+                {
+                    _enemies[i].DamageFlashTimer -= delta;
+                }
+                
+                if (_enemies[i].DamageCooldownTimer > -1)
+                {
+                    _enemies[i].DamageCooldownTimer -= delta;
+                }
+                
+                if (_enemies[i].Velocity != Vector2.Zero)
+                {
+                    _enemies[i].WorldPosition += _enemies[i].Velocity * delta;
+                    
+                    _enemies[i].Velocity *= (1 - 3f * delta); 
+                    
+                    if (_enemies[i].Velocity.LengthSquared() < 1f)
+                    {
+                        _enemies[i].Velocity = Vector2.Zero;
+                    }
+                    
+                    _enemies[i].WorldPosition.X = MathHelper.Clamp(_enemies[i].WorldPosition.X, minX, maxX);
+                    _enemies[i].WorldPosition.Y = MathHelper.Clamp(_enemies[i].WorldPosition.Y, minY, maxY);
+                    
+                    _enemies[i].Position = _enemies[i].WorldPosition * _gameScale;
+                    _enemies[i].Hitbox = new Rectangle(
+                        (int)_enemies[i].WorldPosition.X, 
+                        (int)(_enemies[i].WorldPosition.Y + _enemies[i].HoverOffset), 
+                        _enemies[i].Texture.Width, 
+                        _enemies[i].Texture.Height
+                    );
+                    
+                    continue;
+                }
+            }
 
-            if (_enemies[0].Active)
+            if (_enemies[0].Active && _enemies[0].Velocity == Vector2.Zero)
             {
                 _enemies[0].WorldPosition.X += _enemies[0].Speed * _enemies[0].Direction * delta;
                 if (_enemies[0].WorldPosition.X <= minX)
@@ -958,9 +1117,15 @@ namespace WreckGame
                     _enemies[0].Direction = -1;
                 }
                 _enemies[0].Position = _enemies[0].WorldPosition * _gameScale;
-                _enemies[0].Hitbox = new Rectangle((int)_enemies[0].WorldPosition.X, (int)(_enemies[0].WorldPosition.Y + _enemies[0].HoverOffset), _enemies[0].Texture.Width, _enemies[0].Texture.Height);
+                _enemies[0].Hitbox = new Rectangle(
+                    (int)_enemies[0].WorldPosition.X, 
+                    (int)(_enemies[0].WorldPosition.Y + _enemies[0].HoverOffset), 
+                    _enemies[0].Texture.Width, 
+                    _enemies[0].Texture.Height
+                );
             }
-            if (_enemies[1].Active)
+            
+            if (_enemies[1].Active && _enemies[1].Velocity == Vector2.Zero)
             {
                 _enemies[1].WorldPosition.Y += _enemies[1].Speed * _enemies[1].Direction * delta;
                 if (_enemies[1].WorldPosition.Y <= minY)
@@ -974,9 +1139,15 @@ namespace WreckGame
                     _enemies[1].Direction = -1;
                 }
                 _enemies[1].Position = _enemies[1].WorldPosition * _gameScale;
-                _enemies[1].Hitbox = new Rectangle((int)_enemies[1].WorldPosition.X, (int)(_enemies[1].WorldPosition.Y + _enemies[1].HoverOffset), _enemies[1].Texture.Width, _enemies[1].Texture.Height);
+                _enemies[1].Hitbox = new Rectangle(
+                    (int)_enemies[1].WorldPosition.X, 
+                    (int)(_enemies[1].WorldPosition.Y + _enemies[1].HoverOffset), 
+                    _enemies[1].Texture.Width, 
+                    _enemies[1].Texture.Height
+                );
             }
-            if (_enemies[2].Active)
+            
+            if (_enemies[2].Active && _enemies[2].Velocity == Vector2.Zero)
             {
                 Vector2 toPlayer = _droneWorldPosition - _enemies[2].WorldPosition;
                 if (toPlayer.Length() > 16)
@@ -987,7 +1158,75 @@ namespace WreckGame
                     _enemies[2].WorldPosition.Y = MathHelper.Clamp(_enemies[2].WorldPosition.Y, minY, maxY);
                 }
                 _enemies[2].Position = _enemies[2].WorldPosition * _gameScale;
-                _enemies[2].Hitbox = new Rectangle((int)_enemies[2].WorldPosition.X, (int)(_enemies[2].WorldPosition.Y + _enemies[2].HoverOffset), _enemies[2].Texture.Width, _enemies[2].Texture.Height);
+                _enemies[2].Hitbox = new Rectangle(
+                    (int)_enemies[2].WorldPosition.X, 
+                    (int)(_enemies[2].WorldPosition.Y + _enemies[2].HoverOffset), 
+                    _enemies[2].Texture.Width, 
+                    _enemies[2].Texture.Height
+                );
+            }
+
+            if (_enemies[3].Active && _enemies[3].Velocity == Vector2.Zero)
+            {
+                _enemies[3].WorldPosition.X += _enemies[3].Speed * _enemies[3].Direction * delta;
+                if (_enemies[3].WorldPosition.X <= minX)
+                {
+                    _enemies[3].WorldPosition.X = minX;
+                    _enemies[3].Direction = 1;
+                }
+                else if (_enemies[3].WorldPosition.X >= maxX)
+                {
+                    _enemies[3].WorldPosition.X = maxX;
+                    _enemies[3].Direction = -1;
+                }
+                _enemies[3].Position = _enemies[3].WorldPosition * _gameScale;
+                _enemies[3].Hitbox = new Rectangle(
+                    (int)_enemies[3].WorldPosition.X, 
+                    (int)(_enemies[3].WorldPosition.Y + _enemies[3].HoverOffset), 
+                    _enemies[3].Texture.Width, 
+                    _enemies[3].Texture.Height
+                );
+            }
+
+            if (_enemies[4].Active && _enemies[4].Velocity == Vector2.Zero)
+            {
+                _enemies[4].WorldPosition.Y += _enemies[4].Speed * _enemies[4].Direction * delta;
+                if (_enemies[4].WorldPosition.Y <= minY)
+                {
+                    _enemies[4].WorldPosition.Y = minY;
+                    _enemies[4].Direction = 1;
+                }
+                else if (_enemies[4].WorldPosition.Y >= maxY)
+                {
+                    _enemies[4].WorldPosition.Y = maxY;
+                    _enemies[4].Direction = -1;
+                }
+                _enemies[4].Position = _enemies[4].WorldPosition * _gameScale;
+                _enemies[4].Hitbox = new Rectangle(
+                    (int)_enemies[4].WorldPosition.X, 
+                    (int)(_enemies[4].WorldPosition.Y + _enemies[4].HoverOffset), 
+                    _enemies[4].Texture.Width, 
+                    _enemies[4].Texture.Height
+                );
+            }
+
+            if (_enemies[5].Active && _enemies[5].Velocity == Vector2.Zero)
+            {
+                Vector2 toPlayer = _droneWorldPosition - _enemies[5].WorldPosition;
+                if (toPlayer.Length() > 120)
+                {
+                    toPlayer.Normalize();
+                    _enemies[5].WorldPosition += toPlayer * _enemies[5].Speed * delta;
+                    _enemies[5].WorldPosition.X = MathHelper.Clamp(_enemies[5].WorldPosition.X, minX, maxX);
+                    _enemies[5].WorldPosition.Y = MathHelper.Clamp(_enemies[5].WorldPosition.Y, minY, maxY);
+                }
+                _enemies[5].Position = _enemies[5].WorldPosition * _gameScale;
+                _enemies[5].Hitbox = new Rectangle(
+                    (int)_enemies[5].WorldPosition.X, 
+                    (int)(_enemies[5].WorldPosition.Y + _enemies[5].HoverOffset), 
+                    _enemies[5].Texture.Width, 
+                    _enemies[5].Texture.Height
+                );
             }
         }
 
@@ -997,15 +1236,47 @@ namespace WreckGame
             {
                 if (_enemies[i].Active && _playerHitbox.Intersects(_enemies[i].Hitbox))
                 {
-                    _playerHP -= 25;
-                    _damageFlashTimer = DAMAGE_FLASH_DURATION;
-                    Vector2 collisionPosition = (_droneWorldPosition + _enemies[i].WorldPosition) / 2;
-                    _explosionPosition = collisionPosition * _gameScale;
-                    _explosionActive = true;
-                    _currentExplosionFrame = 0;
-                    _frameTimer = 0f;
-                    if (_playerHP <= 0) _isPlayerDead = true;
-                    _enemies[i].Active = false;
+                    if (_playerDamageCooldownTimer < 0 && _enemies[i].DamageCooldownTimer < 0)
+                    {
+                        _playerHP -= 25;
+                        _damageFlashTimer = DAMAGE_FLASH_DURATION;
+                        _playerDamageCooldownTimer = DAMAGE_COOLDOWN_DURATION;
+                        
+                        _enemies[i].HP -= 25;
+                        _enemies[i].DamageFlashTimer = DAMAGE_FLASH_DURATION;
+                        _enemies[i].DamageCooldownTimer = DAMAGE_COOLDOWN_DURATION;
+                        
+                        Vector2 collisionDirection = _droneWorldPosition - _enemies[i].WorldPosition;
+                        if (collisionDirection != Vector2.Zero)
+                        {
+                            collisionDirection.Normalize();
+                            
+                            _droneVelocity += collisionDirection * 300f;
+                            
+                            _enemies[i].Velocity = -collisionDirection * 300f;
+                        }
+                        
+                        if (_enemies[i].HP <= 0)
+                        {
+                            Vector2 explosionPos = _enemies[i].WorldPosition;
+                            _enemyExplosionPosition = explosionPos * _gameScale;
+                            _enemyExplosionActive = true;
+                            _enemyExplosionFrame = 0;
+                            _enemyExplosionTimer = 0f;
+                            _enemies[i].Active = false;
+                        }
+                        
+                        if (_playerHP <= 0)
+                        {
+                            _isPlayerDead = true;
+                            _deathReason = DeathReason.EnemyCollision;
+                            Vector2 explosionPos = _droneWorldPosition;
+                            _explosionPosition = explosionPos * _gameScale;
+                            _explosionActive = true;
+                            _currentExplosionFrame = 0;
+                            _frameTimer = 0f;
+                        }
+                    }
                     break;
                 }
             }
@@ -1044,13 +1315,41 @@ namespace WreckGame
                     if (!_enemies[j].Active) continue;
                     if (_enemies[i].Hitbox.Intersects(_enemies[j].Hitbox))
                     {
-                        Vector2 collisionPosition = (_enemies[i].WorldPosition + _enemies[j].WorldPosition) / 2;
-                        _enemyExplosionPosition = collisionPosition * _gameScale;
-                        _enemyExplosionActive = true;
-                        _enemyExplosionFrame = 0;
-                        _enemyExplosionTimer = 0f;
-                        _enemies[i].Active = false;
-                        _enemies[j].Active = false;
+                        if (_enemies[i].DamageCooldownTimer < 0 && _enemies[j].DamageCooldownTimer < 0)
+                        {
+                            _enemies[i].HP -= 25;
+                            _enemies[j].HP -= 25;
+
+                            _enemies[i].DamageFlashTimer = DAMAGE_FLASH_DURATION;
+                            _enemies[j].DamageFlashTimer = DAMAGE_FLASH_DURATION;
+                            
+                            _enemies[i].DamageCooldownTimer = DAMAGE_COOLDOWN_DURATION;
+                            _enemies[j].DamageCooldownTimer = DAMAGE_COOLDOWN_DURATION;
+                            
+                            Vector2 collisionDirection = _enemies[i].WorldPosition - _enemies[j].WorldPosition;
+                            if (collisionDirection != Vector2.Zero)
+                            {
+                                collisionDirection.Normalize();
+                                
+                                _enemies[i].Velocity = collisionDirection * 200f;
+                                _enemies[j].Velocity = -collisionDirection * 200f;
+                            }
+                            
+                            bool enemy1Destroyed = _enemies[i].HP <= 0;
+                            bool enemy2Destroyed = _enemies[j].HP <= 0;
+                            
+                            if (enemy1Destroyed || enemy2Destroyed)
+                            {
+                                Vector2 collisionPosition = (_enemies[i].WorldPosition + _enemies[j].WorldPosition) / 2;
+                                _enemyExplosionPosition = collisionPosition * _gameScale;
+                                _enemyExplosionActive = true;
+                                _enemyExplosionFrame = 0;
+                                _enemyExplosionTimer = 0f;
+                            }
+                            
+                            if (enemy1Destroyed) _enemies[i].Active = false;
+                            if (enemy2Destroyed) _enemies[j].Active = false;
+                        }
                     }
                 }
             }
@@ -1087,6 +1386,9 @@ namespace WreckGame
             _enemies[0].HoverOffset = (float)Math.Sin(time * 2.5f) * 10f;
             _enemies[1].HoverOffset = (float)Math.Sin(time * 3.5f) * 12f;
             _enemies[2].HoverOffset = (float)Math.Sin(time * 4.5f) * 8f;
+            _enemies[3].HoverOffset = (float)Math.Sin(time * 3.0f) * 9f;
+            _enemies[4].HoverOffset = (float)Math.Sin(time * 4.0f) * 11f;
+            _enemies[5].HoverOffset = (float)Math.Sin(time * 2.8f) * 7f;
             
             _button.Hitbox = new Rectangle(
                 (int)_button.WorldPosition.X,
@@ -1166,6 +1468,189 @@ namespace WreckGame
                 _button.Texture.Width,
                 _button.Texture.Height
             );
+        }
+
+        private void HandlePlayerShooting(GameTime gameTime)
+        {
+            float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            
+            if (_shootCooldownTimer > 0)
+                _shootCooldownTimer -= delta;
+                
+            MouseState mouse = Mouse.GetState();
+            if (!_editMode && !_isPlayerDead && !_isGamePaused && mouse.LeftButton == ButtonState.Pressed && _shootCooldownTimer <= 0)
+            {
+                if (_playerCharge >= BULLET_ENERGY_COST)
+                {
+                    Vector2 mouseScreenPos = new Vector2(mouse.X, mouse.Y);
+                    Vector2 mouseWorldPos = Vector2.Transform(mouseScreenPos, Matrix.Invert(_viewMatrix));
+                    
+                    Vector2 direction = mouseWorldPos - _droneWorldPosition;
+                    if (direction != Vector2.Zero)
+                    {
+                        direction.Normalize();
+                        
+                        for (int i = 0; i < _bullets.Length; i++)
+                        {
+                            if (!_bullets[i].Active)
+                            {
+                                Vector2 bulletPos = new Vector2(
+                                    _droneWorldPosition.X + _droneTexture.Width / 2,
+                                    _droneWorldPosition.Y + _hoverOffset + _droneTexture.Height / 2
+                                );
+                                                                
+                                _bullets[i].Position = bulletPos;
+                                _bullets[i].Direction = direction;
+                                _bullets[i].Active = true;
+                                _bullets[i].LifeTime = 0f;
+                                _bullets[i].Hitbox = new Rectangle((int)bulletPos.X - 2, (int)bulletPos.Y - 2, 4, 4);
+                                _bullets[i].IsEnemyBullet = false;
+
+                                _shootCooldownTimer = SHOOT_COOLDOWN;
+                                _playerCharge -= BULLET_ENERGY_COST;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void HandleEnemyShooting(float delta)
+        {
+            if (_isGamePaused || _editMode || _isPlayerDead) return;
+
+            for (int i = 3; i < _enemies.Length; i++)  // Only process shooting enemies (3, 4, 5)
+            {
+                if (_enemies[i].Active && _enemies[i].CanShoot && _enemies[i].Velocity == Vector2.Zero)
+                {
+                    _enemies[i].ShootTimer -= delta;
+                    
+                    if (_enemies[i].ShootTimer <= 0)
+                    {
+                        _enemies[i].ShootTimer = _enemies[i].ShootCooldown;
+                        
+                        Vector2 shootDirection;
+                        
+                        if (i == 3)
+                        {
+                            shootDirection = new Vector2(_enemies[i].Direction, 0);
+                        }
+                        else if (i == 4)
+                        {
+                            shootDirection = new Vector2(0, _enemies[i].Direction);
+                        }
+                        else
+                        {
+                            shootDirection = _droneWorldPosition - _enemies[i].WorldPosition;
+                            if (shootDirection != Vector2.Zero)
+                            {
+                                shootDirection.Normalize();
+                            }
+                            else
+                            {
+                                shootDirection = new Vector2(1, 0);
+                            }
+                        }
+                        
+                        for (int j = 0; j < _bullets.Length; j++)
+                        {
+                            if (!_bullets[j].Active)
+                            {
+                                Vector2 bulletPos = new Vector2(
+                                    _enemies[i].WorldPosition.X + _enemies[i].Texture.Width / 2,
+                                    _enemies[i].WorldPosition.Y + _enemies[i].HoverOffset + _enemies[i].Texture.Height / 2
+                                );
+                                
+                                _bullets[j].Position = bulletPos;
+                                _bullets[j].Direction = shootDirection;
+                                _bullets[j].Active = true;
+                                _bullets[j].LifeTime = 0f;
+                                _bullets[j].Hitbox = new Rectangle((int)bulletPos.X - 2, (int)bulletPos.Y - 2, 4, 4);
+                                _bullets[j].IsEnemyBullet = true;
+                                
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void UpdateBullets(float delta)
+        {
+            for (int i = 0; i < _bullets.Length; i++)
+            {
+                if (_bullets[i].Active)
+                {
+                    // Update lifetime and movement
+                    _bullets[i].LifeTime += delta;
+                    if (_bullets[i].LifeTime >= BULLET_MAX_LIFETIME)
+                    {
+                        _bullets[i].Active = false;
+                        continue;
+                    }
+                    
+                    _bullets[i].Position += _bullets[i].Direction * _bullets[i].Speed * delta;
+                    _bullets[i].Hitbox = new Rectangle((int)_bullets[i].Position.X - 2, (int)_bullets[i].Position.Y - 2, 4, 4);
+                    
+                    // Out of bounds check
+                    if (_bullets[i].Position.X < TILE_SIZE || _bullets[i].Position.X > MAP_WIDTH_TILES * TILE_SIZE ||
+                        _bullets[i].Position.Y < TILE_SIZE || _bullets[i].Position.Y > MAP_HEIGHT_TILES * TILE_SIZE)
+                    {
+                        _bullets[i].Active = false;
+                        continue;
+                    }
+                    
+                    if (_bullets[i].IsEnemyBullet)
+                    {
+                        // Enemy bullet hits player
+                        if (!_isPlayerDead && _playerHitbox.Intersects(_bullets[i].Hitbox) && _playerDamageCooldownTimer < 0)
+                        {
+                            _playerHP -= BULLET_DAMAGE;
+                            _damageFlashTimer = DAMAGE_FLASH_DURATION;
+                            _playerDamageCooldownTimer = DAMAGE_COOLDOWN_DURATION;
+                            
+                            if (_playerHP <= 0)
+                            {
+                                _isPlayerDead = true;
+                                _deathReason = DeathReason.EnemyBullet;
+                                Vector2 explosionPos = _droneWorldPosition;
+                                _explosionPosition = explosionPos * _gameScale;
+                                _explosionActive = true;
+                                _currentExplosionFrame = 0;
+                                _frameTimer = 0f;
+                            }
+                            
+                            _bullets[i].Active = false;
+                        }
+                    }
+                    else
+                    {
+                        // Player bullet hits enemy
+                        for (int j = 0; j < _enemies.Length; j++)
+                        {
+                            if (_enemies[j].Active && _bullets[i].Hitbox.Intersects(_enemies[j].Hitbox))
+                            {
+                                _enemies[j].HP -= BULLET_DAMAGE;
+                                _enemies[j].DamageFlashTimer = DAMAGE_FLASH_DURATION;
+                                
+                                if (_enemies[j].HP <= 0)
+                                {
+                                    _enemies[j].Active = false;
+                                    _enemyExplosionPosition = _enemies[j].WorldPosition * _gameScale;
+                                    _enemyExplosionActive = true;
+                                    _enemyExplosionFrame = 0;
+                                    _enemyExplosionTimer = 0f;
+                                }
+                                
+                                _bullets[i].Active = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void HandleButtonInteraction(KeyboardState keyboard)
@@ -1282,11 +1767,16 @@ namespace WreckGame
             Color overlayColor = new Color(255, 0, 0, 255);
             Color titleBgColor = Color.Red;
             Color titleColor = Color.White;
+            Color subtitleColor = Color.DarkRed;
 
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             DrawOverlay(overlayColor);
-            DrawCenteredText("GAME OVER", titleBgColor, titleBgColor, 3f, false, true, 8f, -100);
-            DrawCenteredText("GAME OVER", titleColor, Color.Transparent, 3f, false, false, 8f, -100);
+            DrawCenteredText("GAME OVER", titleBgColor, titleBgColor, 3f, false, true, 8f, -140);
+            DrawCenteredText("GAME OVER", titleColor, Color.Transparent, 3f, false, false, 8f, -140);
+            
+            string deathMessage = GetDeathMessage(_deathReason);
+            DrawCenteredText(deathMessage, subtitleColor, Color.Transparent, 1.5f, false, false, 4f, -40);
+            
             foreach (Button button in _deathScreenButtons)
             {
                 DrawButton(button);
@@ -1294,11 +1784,24 @@ namespace WreckGame
             _spriteBatch.End();
         }
 
+        private string GetDeathMessage(DeathReason reason)
+        {
+            return reason switch
+            {
+                DeathReason.EnemyCollision => "DESTROYED BY ENEMY COLLISION",
+                DeathReason.EnemyBullet => "DESTROYED BY ENEMY FIRE",
+                DeathReason.EnergyDepleted => "ENERGY DEPLETED",
+                DeathReason.DebugKill => "DEBUG KILL",
+                _ => "DRONE DESTROYED"
+            };
+        }
+
         private void DrawGame()
         {
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, _viewMatrix);
             DrawMap();
             DrawCharacters();
+            DrawBullets();
             DrawDataShards();
             DrawRepairParts();
             DrawChargeItems();
@@ -1384,20 +1887,26 @@ namespace WreckGame
         {
             if (!_isPlayerDead)
             {
-                _spriteBatch.Draw(_droneTexture, new Vector2(_droneWorldPosition.X, _droneWorldPosition.Y + _hoverOffset), null, Color.White, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
+                Color playerColor = _damageFlashTimer > 0 ? Color.Red : Color.White;
+                _spriteBatch.Draw(_droneTexture, new Vector2(_droneWorldPosition.X, _droneWorldPosition.Y + _hoverOffset), null, playerColor, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
             }
+            
             for (int i = 0; i < _enemies.Length; i++)
             {
                 if (_enemies[i].Active)
                 {
+                    Color enemyColor = _enemies[i].DamageFlashTimer > 0 ? Color.Red : Color.White;
+                    
                     SpriteEffects effect = SpriteEffects.None;
-                    if (i == 0 && _enemies[i].Direction == -1) effect = SpriteEffects.FlipHorizontally;
-                    else if (i == 2)
+                    if ((i == 0 || i == 3) && _enemies[i].Direction == -1) 
+                        effect = SpriteEffects.FlipHorizontally;
+                    else if ((i == 2 || i == 5))
                     {
                         Vector2 toPlayer = _droneWorldPosition - _enemies[i].WorldPosition;
                         if (toPlayer.X < 0) effect = SpriteEffects.FlipHorizontally;
                     }
-                    _spriteBatch.Draw(_enemies[i].Texture, new Vector2(_enemies[i].WorldPosition.X, _enemies[i].WorldPosition.Y + _enemies[i].HoverOffset), null, Color.White, 0f, Vector2.Zero, 1.0f, effect, 0f);
+                    
+                    _spriteBatch.Draw(_enemies[i].Texture, new Vector2(_enemies[i].WorldPosition.X, _enemies[i].WorldPosition.Y + _enemies[i].HoverOffset), null, enemyColor, 0f, Vector2.Zero, 1.0f, effect, 0f);
                 }
             }
         }
@@ -1462,6 +1971,27 @@ namespace WreckGame
                     if (_chargeItems[i].Active)
                     {
                         DrawRectangleOutline(_chargeItems[i].Hitbox, Color.Green, 1);
+                    }
+                }
+            }
+        }
+
+        private void DrawBullets()
+        {
+            for (int i = 0; i < _bullets.Length; i++)
+            {
+                if (_bullets[i].Active)
+                {
+                    Color bulletColor = _bullets[i].IsEnemyBullet ? Color.Red : Color.Orange;
+                    
+                    _spriteBatch.Draw(_pixelTexture, new Rectangle(
+                        (int)_bullets[i].Position.X - 2,
+                        (int)_bullets[i].Position.Y - 2,
+                        4, 4), bulletColor);
+                    
+                    if (_showHitboxes)
+                    {
+                        DrawRectangleOutline(_bullets[i].Hitbox, Color.Red, 1);
                     }
                 }
             }
