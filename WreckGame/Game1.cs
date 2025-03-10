@@ -48,7 +48,7 @@ namespace WreckGame
         private Dictionary<char, Texture2D> _fontTextures;
         private Texture2D _fontBackgroundTexture;
         private Texture2D _cursorTexture;
-        private Color _cursorColor = Color.White;
+        private Color _cursorColor = Color.DarkSlateGray;
         #endregion
 
         #region Map
@@ -258,7 +258,8 @@ namespace WreckGame
 
         private Rectangle CalculateButtonBounds(string text, float scale, int y)
         {
-            Vector2 textSize = MeasureText(text, scale);
+            float letterSpacing = 8.0f;
+            Vector2 textSize = MeasureText(text, scale, letterSpacing);
             int width = (int)textSize.X;
             int height = 60;
             int x = GraphicsDevice.Viewport.Width / 2 - width / 2;
@@ -1261,25 +1262,26 @@ namespace WreckGame
                         DrawRectangleOutline(_enemies[i].Hitbox, Color.White, 1);
                     }
                 }
+
                 for (int i = 0; i < _dataShards.Length; i++)
                 {
                     if (_dataShards[i].Active)
                     {
-                        DrawRectangleOutline(_dataShards[i].Hitbox, Color.White, 1);
+                        DrawRectangleOutline(_dataShards[i].Hitbox, Color.Green, 1);
                     }
                 }
                 for (int i = 0; i < _repairParts.Length; i++)
                 {
                     if (_repairParts[i].Active)
                     {
-                        DrawRectangleOutline(_repairParts[i].Hitbox, Color.White, 1);
+                        DrawRectangleOutline(_repairParts[i].Hitbox, Color.Green, 1);
                     }
                 }
                 for (int i = 0; i < _chargeItems.Length; i++)
                 {
                     if (_chargeItems[i].Active)
                     {
-                        DrawRectangleOutline(_chargeItems[i].Hitbox, Color.White, 1);
+                        DrawRectangleOutline(_chargeItems[i].Hitbox, Color.Green, 1);
                     }
                 }
             }
@@ -1349,31 +1351,51 @@ namespace WreckGame
 
         private void DrawButton(Button button)
         {
-            Color textColor = button.TextColor;
-            Vector2 textSize = MeasureText(button.Text, button.Scale);
+            MouseState mouse = Mouse.GetState();
+            Point mousePoint = new Point(mouse.X, mouse.Y);
+            bool isHovered = button.Contains(mousePoint);
+            
+            Color textColor = isHovered 
+                ? new Color((int)(button.TextColor.R * 0.8f), (int)(button.TextColor.G * 0.8f), (int)(button.TextColor.B * 0.8f), button.TextColor.A) 
+                : button.TextColor;
+            
+            Color backgroundColor = isHovered ? Color.DarkGreen : Color.Transparent;
+            
+            float letterSpacing = 8.0f;
+            
+            Vector2 textSize = MeasureText(button.Text, button.Scale, letterSpacing);
             Vector2 textPos = new Vector2(button.Bounds.X + (button.Bounds.Width - textSize.X) / 2, button.Bounds.Y + (button.Bounds.Height - textSize.Y) / 2);
-            DrawColoredText(button.Text, textPos, textColor, Color.Transparent, button.Scale, false, false, 0f);
+            
+            DrawColoredText(button.Text, textPos, textColor, backgroundColor, button.Scale, false, isHovered, letterSpacing);
+            
             if (_showHitboxes)
             {
                 DrawRectangleOutline(button.Bounds, Color.Yellow, 2);
             }
         }
 
-        private Vector2 MeasureText(string text, float scale)
+        private Vector2 MeasureText(string text, float scale, float letterSpacing = 0f)
         {
             float width = 0;
             float height = 32 * scale;
-            foreach (char c in text)
+            
+            for (int i = 0; i < text.Length; i++)
             {
-                if (c == ' ')
+                if (text[i] == ' ')
                 {
                     width += 32 * scale;
                 }
-                else if (_fontTextures.TryGetValue(c, out Texture2D texture))
+                else if (_fontTextures.TryGetValue(text[i], out Texture2D texture))
                 {
-                    width += 32 * scale;
+                    width += texture.Width * scale;
+                }
+                
+                if (i < text.Length - 1)
+                {
+                    width += letterSpacing * scale;
                 }
             }
+            
             return new Vector2(width, height);
         }
 
