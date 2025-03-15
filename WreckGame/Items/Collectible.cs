@@ -14,7 +14,7 @@ namespace WreckGame.Items
             _graphicsManager = graphicsManager;
             Texture = _graphicsManager.LoadTexture(textureName);
             WorldPosition = position;
-            Position = WorldPosition; // Wordt later geschaald in MainGameState
+            Position = WorldPosition; // Gets scaled later in MainGameState
         }
 
         public override void Update(GameTime gameTime)

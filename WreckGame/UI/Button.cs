@@ -8,13 +8,13 @@ namespace WreckGame.UI
 {
     public class Button : Entity
     {
-        // In-game knop
+        // In-game button
         public Texture2D PressedTexture { get; set; }
         public bool IsPressed { get; set; } = false;
         public float PressedTimer { get; set; } = 0f;
         public bool ShowPrompt { get; set; } = false;
 
-        // UI knop
+        // UI button
         private readonly string _text;
         private readonly float _scale;
         private Rectangle _bounds;
@@ -24,7 +24,7 @@ namespace WreckGame.UI
         private Player _player;
         private InputManager _inputManager;
 
-        // Constructor voor in-game knop
+        // Constructor for in-game button
         public Button(GraphicsManager graphicsManager, Vector2 position)
         {
             _graphicsManager = graphicsManager;
@@ -35,7 +35,7 @@ namespace WreckGame.UI
             Hitbox = new Rectangle((int)WorldPosition.X, (int)WorldPosition.Y, Texture.Width, Texture.Height);
         }
 
-        // Constructor voor UI knop
+        // Constructor for UI button
         public Button(GraphicsManager graphicsManager, string text, float scale, int y)
         {
             _graphicsManager = graphicsManager;

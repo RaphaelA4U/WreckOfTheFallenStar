@@ -65,7 +65,7 @@ namespace WreckGame.Utilities
                 else if (_fontTextures.TryGetValue(c, out Texture2D texture)) width += texture.Width * scale;
                 width += letterSpacing * scale;
             }
-            if (text.Length > 0) width -= letterSpacing * scale; // Laatste spacing niet meetellen
+            if (text.Length > 0) width -= letterSpacing * scale; // Don't add letter spacing after the last letter
             return new Vector2(width, 32 * scale);
         }
 

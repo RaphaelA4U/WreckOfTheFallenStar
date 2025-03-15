@@ -19,7 +19,7 @@ namespace WreckGame.Entities
         public float ChargeTimer { get; set; } = 0f;
         public float DamageCooldownTimer { get; set; } = -1f;
 
-        public MainGameState GameState => _gameState; // Toegevoegd voor toegang in andere klassen
+        public MainGameState GameState => _gameState; // Added for access to game state from other classes
 
         public Player(InputManager inputManager, GraphicsManager graphicsManager, MainGameState gameState)
         {
@@ -38,7 +38,7 @@ namespace WreckGame.Entities
             double time = gameTime.TotalGameTime.TotalSeconds;
             HoverOffset = (float)(Math.Sin(time * 5) * 15f);
 
-            // Beweging
+            // Movement
             float acceleration = 1500f;
             float maxSpeed = 500f;
             float friction = 3f;

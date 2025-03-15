@@ -14,7 +14,7 @@ namespace WreckGame.Items
             _index = index;
         }
 
-        public override void OnCollect(Player player) { /* Geen effect */ }
+        public override void OnCollect(Player player) { /* No effect */ }
 
         protected override float GetHoverOffset(double time)
         {
