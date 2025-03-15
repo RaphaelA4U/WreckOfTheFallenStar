@@ -10,7 +10,7 @@
 
 #-------------------------------- References --------------------------------#
 
-
+/reference:..\..\..\..\..\.nuget\packages\monogame.extended.content.pipeline\4.0.4\tools\MonoGame.Extended.Content.Pipeline.dll
 #---------------------------------- Content ---------------------------------#
 
 #begin entities/drone_enemy.png
@@ -613,18 +613,6 @@
 /processorParam:TextureFormat=Color
 /build:misc/cursor.png
 
-#begin misc/cursor.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:misc/cursor.png
-
 #begin misc/pixel.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -697,3 +685,24 @@
 /processorParam:TextureFormat=Color
 /build:tiles/border.png
 
+#begin tilesets/tileset.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:tilesets/tileset.png
+
+#begin tilesets/WreckGame.tsx
+/importer:TiledMapTilesetImporter
+/processor:TiledMapTilesetProcessor
+/build:tilesets/WreckGame.tsx
+
+#begin tilesets/WreckTiles.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:tilesets/WreckTiles.tmx

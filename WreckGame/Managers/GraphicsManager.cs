@@ -18,6 +18,8 @@ namespace WreckGame.Managers
             _textures = new Dictionary<string, Texture2D>();
         }
 
+        public ContentManager Content => _content;
+
         public Texture2D LoadTexture(string assetName)
         {
             if (!_textures.ContainsKey(assetName))

@@ -60,8 +60,14 @@
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/particles/explosion3.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/tiles/asphalt.png</File>
     <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/tiles/border.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/tilesets/tileset.png</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/tilesets/WreckGame.tsx</File>
+    <File>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/tilesets/WreckTiles.tmx</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

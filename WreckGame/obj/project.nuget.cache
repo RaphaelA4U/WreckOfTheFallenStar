@@ -1,10 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "exBOxWy+00g=",
+  "dgSpecHash": "LjQxNTzDJAY=",
   "success": true,
   "projectFilePath": "C:\\Users\\rdsru\\Documents\\cs_games\\WreckOfTheFallenStar\\WreckGame\\WreckGame.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\rdsru\\.nuget\\packages\\autofac\\5.2.0\\autofac.5.2.0.nupkg.sha512",
     "C:\\Users\\rdsru\\.nuget\\packages\\monogame.content.builder.task\\3.8.2.1105\\monogame.content.builder.task.3.8.2.1105.nupkg.sha512",
+    "C:\\Users\\rdsru\\.nuget\\packages\\monogame.extended\\4.0.4\\monogame.extended.4.0.4.nupkg.sha512",
+    "C:\\Users\\rdsru\\.nuget\\packages\\monogame.extended.content.pipeline\\4.0.4\\monogame.extended.content.pipeline.4.0.4.nupkg.sha512",
     "C:\\Users\\rdsru\\.nuget\\packages\\monogame.framework.desktopgl\\3.8.2.1105\\monogame.framework.desktopgl.3.8.2.1105.nupkg.sha512",
     "C:\\Users\\rdsru\\.nuget\\packages\\monogame.library.sdl\\2.26.5.5\\monogame.library.sdl.2.26.5.5.nupkg.sha512",
     "C:\\Users\\rdsru\\.nuget\\packages\\nvorbis\\0.10.4\\nvorbis.0.10.4.nupkg.sha512",

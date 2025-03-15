@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SourceFile>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/tilesets/WreckGame.tsx</SourceFile>
+  <SourceTime>2025-03-15T23:37:05.519887+01:00</SourceTime>
+  <DestFile>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/bin/DesktopGL/Content/tilesets/WreckGame.xnb</DestFile>
+  <DestTime>2025-03-15T23:49:36.5874182+01:00</DestTime>
+  <Importer>TiledMapTilesetImporter</Importer>
+  <ImporterTime>2025-01-10T18:49:08+01:00</ImporterTime>
+  <Processor>TiledMapTilesetProcessor</Processor>
+  <ProcessorTime>2025-01-10T18:49:08+01:00</ProcessorTime>
+  <Dependencies />
+  <BuildAsset>
+    <string>C:/Users/rdsru/Documents/cs_games/WreckOfTheFallenStar/WreckGame/Content/bin/DesktopGL/Content/tilesets/tileset_0.xnb</string>
+  </BuildAsset>
+  <BuildOutput />
+</PipelineBuildEvent>
