@@ -3,6 +3,7 @@
 - Gebruik PascalCase voor klassen en methoden in C# (bijv. Player, UpdateGameState).
 - Gebruik underscore voor private velden in C# (bijv. _playerPosition).
 - Gebruik MonoGame-conventies, zoals SpriteBatch voor rendering en Vector2 voor posities.
+- Check of nieuwe functionaliteiten overeenstemmen met het Docs/GameDesign.md document, zo niet beveel wat anders aan.
 
 ## Code-generation
 - Gebruik dependency injection voor managers zoals InputManager en GraphicsManager.
@@ -18,6 +19,7 @@
 - Waarschuw als er hardcoded waarden in de code staan, zoals magische getallen of strings.
 - Controleer of alle MonoGame-klassen correct IDisposable implementeren.
 - Controleer of de documentatie (bijv. Docs/README.md of Docs/gameplay.md) up-to-date is bij grotere wijzigingen.
+- Check of nieuwe functionaliteiten overeenstemmen met het Docs/GameDesign.md document, zo niet beveel wat anders aan.
 
 ## Commit messages
 - Gebruik het formaat 'Type: Beschrijving' (bijv. 'Feature: Nieuwe Enemy-klasse toegevoegd').
